@@ -1,0 +1,397 @@
+
+Continuous Integration
+======================
+
+- jenkins is an open source automation tool written in Java with plugins built for continuous Integration
+
+- It is used to build and test software project continuously 
+
+- Using jenkins , you can accelerate software development
+- Jenkins achieves CI with the help of plugins ( Plugins are heart of jenkins)
+
+- Jenkins is an orchastration tool, it doesn't contain anything, its like a bare metal tool.
+
+- if you want to integrate the particular tool with jenkins , you need to install the plugin for that tool in the jenkins ( for e.g if you want to use Git , Maven or S3 publisher , you have to install the plugin)
+
+- Setup jenkins to watch for any code changes
+
+Installation Software
+---------------------
+
+- Git Source control
+- java (JDK) - 11
+- Apache Maven
+- jenkins
+-- Setup Wizard
+
+
+
+Install Jenksin in Amazon Linux Machine
+========================================
+
+launch a new Amazon Linux Ec2 instance in AWS console.
+
+Login to Linux Ec2 instance using putty.
+
+user name - ec2-user
+sudo
+attach the PPK file
+
+sudo su
+
+yum update -y
+
+java -version
+
+javJava - 11
+
+sudo yum upgrade
+
+sudo amazon-linux-extras install java-openjdk11
+sudo yum install java-11-openjdk-devel
+
+
+java -version
+
+yum install git
+yum install tree
+
+
+sudo yum install -y wget
+
+Download the repo:
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat/jenkins.repo
+
+Import the required key:
+sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
+
+
+Install Jenkins:
+sudo yum install -y jenkins
+
+Enable Jenkins:
+sudo systemctl enable jenkins
+
+Start Jenkins:
+sudo systemctl start jenkins
+systemctl status jenkins
+
+
+sudo systemctl status jenkins
+
+systemctl status jenkins.service
+
+
+In a new browser tab, navigate to http://<PUBLIC_IP_ADDRESS>:8080
+ 
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+Copy the result of the command, as this is the password we need.
+Paste the password into the Administrator password field on the Jenkins browser page
+
+Click Continue.
+
+Click Install suggested plugins. Note: If the install of any plugins fails, just wait a moment and click retry
+
+
+
+Username: kiran3011
+Password: kiran3011
+Full name: kiran3011
+E-mail address: kiranteja.ankam@gmail.com
+
+
+current path - /home/ec2-user
+
+Not Required
+-------------------------------------------------
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
+JRE_HOME=/usr/lib/jvm/java-8-openjdk-amd64/jre
+EOL
+-------------------------------------------------------
+
+Java Home path
+-------------
+
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
+
+/usr/lib/jvm/java-11-openjdk
+
+
+Maven Install
+=============
+
+Login to the server’s
+
+mvn --version
+
+yum install maven
+
+mavan Home path
+--------------
+MAVEN_HOME -> /usr/share/maven
+
+
+11. Use the cat command to display the password:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+click on select Installed jenkins
+
+Username: testuser
+Password: testuser
+Confirm password: testuser
+Full name: Pradeep Dash
+E-mail address: awsdevops009@gmail.com
+
+
+Usecase-1
+==========
+
+
+Building In Jenkins
+==================
+
+Go To Jenkins
+Click on New Items
+Enter an item name - Test
+
+select Folder option in the below page
+click ok
+
+click on save  ( Default configuration)
+
+
+In the Test folder you just created,
+
+click the create new jobs link.
+Note: You could also click New Item in the left pane.
+
+In the Enter an item name field, type "user_test".
+From the list of available item types, make sure that Freestyle project is selected.
+
+Click OK.
+
+In the configuration for the project, scroll down to the Build section and click the Add build step drop-down arrow.
+
+From the drop-down menu, select Execute shell.
+In the Command text box, add the code containing the uname and whoami commands required to output the desired information to the requested file name:
+
+uname -a && whoami > user_test.txt
+Click Save.
+
+In the user_test project, click Build Now in the left pane.
+Verify that the build completes in the Build History pane.
+
+Once completed, click "Workspace" in the project pane.
+Click the view link to the right of the user_test.txt file.
+
+Verify that the output in the file displays jenkins.
+Click the back button in the browser window.
+Click on the drop-down arrow next to the build in the Build History pane and click
+
+Jenkins Architecture
+======================
+
+Jenkins Projects
+-----------------
+
+- Projects = Job
+- Unit of Work
+- Configuration
+- Phases, Steps , etc
+- use Plugins/Tools
+
+Jenkins Views
+-------------
+
+- Grouping Projects
+- user Interface
+- Global
+- User-defined
+- Default:All
+
+Jenkins Workspace
+------------------
+
+- Folder
+  -- One per Job (default)
+- Source
+- Job Metadata
+- Temporary Files/Logs
+- Build Artifacts  
+
+Usecase-2
+=========
+
+new Item - My_First_Job
+
+Build - Execute shell
+
+echo " This is our First Jenkins Job"
+
+Run the Job
+
+We can see the output.
+
+Now Edit the job
+
+Select Discard old Build - 
+
+Git hub project - 
+
+Parameter - we will add different different parameter
+
+Throtle build- How many instance of this particular job can execute concurrently. If you are not defining , n number of job can execute.
+
+Disable the Project - User won't be able to execute that particular project.
+
+
+Build Trigger
+=============
+
+Trigger Build Remotely -  suppose from other dashboard  application build , you want to trigger this build.
+
+Build After other project build- If you want to trigger this build after another project , Once build A successful , you want to execute this build. as soon as the project a will trigger, this build will executeautomatically.
+
+
+Build periodically
+
+* * * * * ( every minute build )
+
+
+Usecase-2
+=========
+
+Parametrbuild Job
+--------------------
+new Item - param_job
+
+string Parameter
+
+Name
+Default -> Mike
+
+Age
+Default - 20
+
+
+Build - Ececute shell
+
+#!/bin/bash
+echo "Hello I am $Name and I am $Age years old"
+
+
+
+
+Building from SCM
+=================
+
+https://github.com/awsdevops009/Jenkins_class1.git
+
+Update Jenkins plugins
+---------------------
+
+
+Choose Manage Jenkins.
+Choose Go to plugin manager.
+click Available plugin. search for "Maven
+click on install without Restart
+
+Select  restart checkbox.
+
+Configure Maven Installer
+-------------------------
+Click Manage Jenkins.
+
+Click Global Tool Configuration.
+
+
+click on Add Jdk
+
+Remove the Install automatically checkbox
+name - java
+JAVA_HOME -> /usr/lib/jvm/java-17-openjdk/
+
+
+Under Maven installations, click Add Maven.
+
+uncheck Install automatically checkbox.
+
+In the Name box, enter "maven".
+
+MAVEN_HOME -> /usr/share/maven
+
+Click Save.
+
+
+https://github.com/awsdevops009/Jenkins_class1.git
+
+
+
+Configure the Build to Use Maven and Make the Index File
+---------------------------------------------------------
+
+Click New Item.
+
+Enter an item name of "mavenproject" in the box provided.
+
+Select Freestyle project.
+
+Click OK.
+
+Click the Source Code Management tab at the top of the screen.
+
+Select the option for a Git repository.
+
+Copy the git repository link from the above and enter it into the Repository URL box.
+
+https://github.com/awsdevops009/Jenkins_class1.git
+
+Click the Build tab at the top of the screen.
+
+Click Add build step and select the "Invoke top-level Maven targets" option.
+
+Under Maven Version, select M3.
+
+In the Goals box, enter "clean package".
+
+Click "Add build step" dropdown  and select the "Execute shell" option.
+
+In the Command window, enter "bin/makeindex".
+
+Click Add post-build action and select the "Archive the artifacts" option.
+
+In the Files to archive box, enter "index.jsp".
+
+Inside the Archive the artifacts box, click "Advanced "...
+
+Check the option for "Fingerprint all archived artifacts".
+
+
+
+Click Save.
+
+Click Build Now.
+
+Refresh the window and click the View link next to index.jsp. Verify the contents of the index.jsp file.
+
+
+
+
+- Delete the Job
+- Manage jenkins
+- Jenkins configuration
+
+
+
+
+
+
+
+
+
+

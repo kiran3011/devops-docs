@@ -1,0 +1,638 @@
+
+CI/CD
+-----
+
+
+Dev ----> Github
+
+Ops
+---
+
+Build -> Clone from github ( Project data)
+Compile , test , deploy to nexus , deploy to tomacat , code analysis
+
+2 ways of Integration in Jenkins ( Jenkins Git Integratio)
+-----------------------------------
+
+PollSCM - Jenkins will keep pooling Git to check if there are any new checkins
+
+
+Github Webhook- Jenkins will listen to a webhook & Git will let jenkins know if there are any new chekins
+
+
+Jenkins Installation on Ubuntu
+==============================
+
+1. Jdk 11
+2. Jenkins
+3. Maven , Git
+
+Login to Ubuntu Server
+
+user - ubuntu
+
+sudo su
+apt-get update
+
+
+apt-get install git
+apt-get install tree
+
+1. Verify Installed Java Version
+
+java -version
+(Only Java8 or Java11 are recommended)
+
+2. Install Java 8 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+apt install openjdk-11-jre-headless ( Not Required to install)
+
+java -version
+
+current path -> /home/ubuntu
+
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64/jre
+EOL
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+4. First, add the repository key to the system
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+5. Next, append the Debian package repository address to the server’s sources.list
+
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+6. Update System packages
+
+st
+
+7. Install Jenkins and its dependencies
+
+sudo apt -y install jenkins
+
+8. Start Jenkins using systemctl
+
+sudo systemctl start jenkins
+
+9. Get Service Status
+
+sudo systemctl status jenkins  ( if not exit , press ctrl+c)
+
+systemctl status jenkins.service
+
+10. Enable Jenkins Service
+
+sudo systemctl enable jenkins
+
+
+
+
+Take the public IP address of ec2 instance , open in a chrome browser
+
+public IP:8080
+
+
+11. Use the cat command to display the password:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+click on select Installed jenkins
+
+Username: testuser
+Password: testuser
+Confirm password: testuser
+Full name: Pradeep Dash
+E-mail address: awsdevops009@gmail.com
+
+Create Job
+==========
+
+Goto Jenkins
+click on create New item
+
+Item Name -> My_First_job
+
+select "Freestyle project"
+click on ok
+
+Go to Build
+Select - Execute shell
+echo " Hello , This is my first jenkins job"
+
+Build Now 
+will see the output in console output.
+
+Go the Job
+click on configure
+
+Build periodically - * * * * *
+
+Add the timestamp
+
+Github Integration
+==================
+
+Manage Jenkins-> manage plugin
+click on "Available"
+
+search for "Github Integration"
+
+select the plugin and "install without restart"
+
+Now go to Manage jenkins -> manage plugin
+click on "Installed"
+Now you can see "Github Integration" should present.
+
+
+Maven Install
+=============
+
+Login to the server’s
+
+mvn --version
+
+apt install maven
+
+Configure jenkins with Java , Git and maven
+===========================================
+
+verify where java has installed ubuntu machine
+
+cd /usr/lib/jvm/
+ls
+
+cd java-11-openjdk-amd64
+pwd
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+
+Manage Jenkins-> Global tool Configuration
+
+click on "Add Jdk"
+
+name - Localjdk
+
+uncheck the " Install automatically" check box
+
+enter the path in JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64
+
+Go to the Git section
+
+Name - LocalGit
+Path to Git executable - git
+
+maven configure
+--------------
+Login to server where maven installed
+
+go to - /usr/share/maven
+
+path - /usr/share/maven
+
+
+Go to the Maven section
+click on Add maven
+
+name - LocalMaven
+uncheck the " Install automatically" check box
+
+MAVEN_HOME -> /usr/share/maven
+
+click on save
+
+
+Go to jenkins
+Create  a new Item - My_First_Maven
+
+Select Discard Old Build
+maximum of build to keep - 5
+
+Source Code management
+
+Git
+Repository URL - https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+Under Build
+
+Invoke top-level marvan target
+
+choose - LocalMaven
+
+Goal - test install  ( we can define clean build or clean package)
+
+click on Advance
+
+verify where your pom.xml file is present
+
+POM - maven-samples/single-module/pom.xml
+
+Save the Project
+
+click Build Now
+
+Project should build successfully.
+
+
+Go to Configure
+
+Modify the maven Goal - clean package
+
+Save the project
+
+Go to console output
+see the build jar file
+
+Building jar: /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/single-module-project.jar
+
+Go to server and go the below location , you will see the jar file
+
+Building jar: /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/single-module-project.jar
+
+
+If you want to build every minute
+
+Build Periodically - * * * * *
+
+save the file
+
+After every minute , it will automatically.
+
+
+Source Code Pulling in jenkins
+==============================
+
+Go to the Job
+click on configure
+
+poll SCM - * * * * *
+
+Now if any code changes push to github , poll scm will check every minute and do the build.
+
+Go to the Jenkins_project Folder in D drive
+
+git clone https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+Go to visual studio code 
+open the project in visual studio
+
+git branch
+git checkout master
+
+Then modify the code  and push to the git hub.
+
+Go to below path
+maven-samples\single-module\src\test\java\com\example\TestGreeter.java
+
+Modify below code in the file 
+
+@Test
+  public void greetShouldIncludeGreetingMessage() {
+    String someone = "World, Thanks you making me Happy";
+
+    assertThat(greeter.greet(someone).length(), is(greaterThan(someone.length())));
+  }
+  
+  git status
+  git add .
+  git commit -m "file modified"
+  git push origin master
+  
+  
+  You can one new link named "Git Polling Log" in the jenkins Dashbaord.
+  
+  ---------------------------------
+  
+  
+  Jenkin Webhook
+================
+
+Go to the jenkins Job
+
+select - GitHub hook trigger for GITScm polling
+
+save 6the job
+
+Go to gitHub and set the webhook configuration.
+
+Go to the - https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+click on setting 
+click on Webhook
+click onn Add webhook
+
+              public IP where your jenkins server running: port number
+			  
+Payload URL - http://3.239.164.251:8080/github-webhook/
+
+				http://44.200.26.34:8080/github-webhook/
+			3.80.43.220
+44.200.26.34
+ Content type - application/json
+ 
+ 
+http://3.88.104.220:8080/github-webhook/ 
+ 3.88.104.220
+  
+  
+  
+  Making a  Pull Request (PR)
+===========================
+
+Now You are master branch in Visual studio
+
+
+git branch feature_branch
+git checkout feature_branch
+git push origin feature_branch
+
+Now you in feature_branch Branch
+
+create  a  java file
+
+class Simple{  
+    public static void main(String args[]){  
+     System.out.println("Hello Java");  
+    }  
+}  
+
+touch abc.txt
+git add .
+git commit -m "File added"
+
+git push origin feature_branch ( Now file has pushed to feature_branch branch)
+
+Go to Github
+
+click on "Compare and Pull Request"
+
+Add the Reviewer name in the left pane
+
+click on the " Create Pull Request"
+
+Once your Pull request is reviewed by Reviewer 
+
+Then you will see "Merge Pull request"
+click on " confirm Merge"
+
+Now you will able to see the file in Master branch.
+  
+Delete a branch from local and Remote with below 2 command
+-----------------------------------------------------------
+
+git branch -D dev ( dev branch delete from local)
+git push origin :dev ( dev branch will delete from gitHub as well)  
+  
+  
+  
+  
+  How to Publish Test Results in Job
+  ==================================
+  
+  Open the Maven Job and see the result output in console output  
+  
+  You can see Test Run Results
+  
+  Now see the sure fire report directory
+  
+  Surefire report directory: /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/surefire-reports
+  
+  /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/surefire-reports
+  
+  Go to the jenkins Ec2 server 
+  
+  Go to below place
+  
+  cd /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/surefire-re ports
+  
+  Now you see xml file are present which contain your test results
+  
+  cat TEST-com.example.TestGreeter.xml  ( You see the test results presents)
+  
+  
+  So jenkins job needs to read the xml file  from this location.
+  
+  Go to My_First_Maven project location in ec2 server
+
+cd /var/lib/jenkins/workspace/My_First_Maven > ls maven-samples/single-module/target/surefire-reports/*.xml
+
+You will able to see all the report xml files
+
+We need to provide this below path to jenkins job
+
+maven-samples/single-module/target/surefire-reports/*.xml ( It will read all the xml files)
+
+Goto jenkins job
+click on configure
+Go to Post build Action
+
+select Publish Junit test result report
+
+Test report XMLs -> maven-samples/single-module/target/surefire-reports/*.xml
+
+Select "Retain long standard output/error" checkbox
+
+select "If checked, the test failures will still be reported but won't mark the build as unstable" checkbox
+
+click on save
+
+Let execute the job 3 or 4 timestamp
+
+Now you can see a Test Result in the dashboard
+
+
+Now go to the visual studio code 
+Add one more funtion in the below file
+
+maven-samples\single-module\src\test\java\com\example\TestGreeter.java
+
+Push the code to github
+
+once job will run 
+
+check the dashbaord report.
+
+
+For Failed Testcase , Please add this function to the TestGreeter.java file
+
+@Test
+  public void greetShouldIncludeGreetingMessage2() {
+    String someone = "Hello Good morning one ";
+
+    assertThat(greeter.greet(someone).length(), is(lessThan(someone.length())));
+    
+  }
+  
+
+Archieve the Last successful Artifact
+=====================================
+
+Go to the last successful job 
+open the console output
+
+Copy the Jar file location
+
+Building jar: /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module/target/single-module-project.jar
+
+Go to Ec2 server and go the below directory to see the jar.
+
+cd  /var/lib/jenkins/workspace/My_First_Maven 
+
+ls maven-samples/single-module/target/
+
+
+Go to the Jenkins job
+click on configure
+
+Go to the post build action.
+select Archieve the artifacts
+
+Files to archive - maven-samples/single-module/target/
+
+click on Advance
+
+select - Archieve artifacts only if build is successful
+
+
+jenkin workspace verification
+-----------------------------
+
+Navigate to Jenkins->Manage Jenkins->Configure System
+
+you can see the workspace location of the  jenkins
+
+/var/lib/jenkins
+
+
+Go to below folder in ec2 server
+
+cd /var/lib/jenkins/
+
+
+cd workspace
+
+tree ( you will able to see all the project in tree structure)
+ls ( for every project you create  , one folder will create)
+you can see all the project in workspace.
+
+
+
+cd /var/lib/jenkins/workspace/My_First_Maven/maven-samples/single-module
+ls
+mvn package ( it will create a package , which we already done from the jenkins)
+
+tree ( Al the build results present here)
+
+
+
+two types of build terminology we are using - 
+
+incremental build - we need not to clean the previous build and start a new build. For every 15 min , we want a build. so we will not delete the previous build. for incremental build , we need not to delete the workspace every time. for e.g every 15 min , you want to do a build , so we go for incremental build.
+
+clean build - we need to first clear the previous build or delete the workspace everytime   and start a new build.
+
+
+want to do clean build of maven-samples project again
+-----------------------------------------------------
+
+select the project in jenkin
+click on configure
+
+Go to the Build environment and select below check box 
+
+choose "Delete workspace before build start"
+
+or "Abort the build if it's stuck"  ( if you provide 10 min , if build will take more than 10 mins , build will fails)
+
+click on save 
+
+start a build now.
+
+Now if you go to the console ouput , you will see
+
+deleting the workspace and clone the repository etc.
+
+
+
+Remote Build trigger in Jenkins
+  ================================
+  
+  Parameterized Remote Trigger
+  
+  Go to a Job - click on configure
+  
+  Under Build Trigger
+  
+  select "Trigger builds remotely (e.g., from scripts)"  under Build Triggers section
+  
+  Enter - TESTAUTH
+  
+  Then copy the URL - JENKINS_URL/job/My_First_Maven/build?token=TOKEN_NAME
+  
+  Then Replace - JENKINS_URL with  http://52.23.182.94:8080/  ( EC2 instance Public IP address:8080)
+                 TOKEN_NAME = TESTAUTH
+				 
+	Final UR will be - 	http://3.231.225.4:8080/job/test/build?token=TESTAUTH
+                        
+						http://3.239.164.251:8080/job/My_First_Maven/build?token=TESTAUTH
+
+  Open any other firefox browser or any browser and run the below URL
+  
+  http://52.23.182.94:8080/job/My_First_job/build?token=TESTAUTH
+  
+  Now you will see job will run chrome browser
+
+  Go to the console output , you will see below line in the begining
+  
+  Started by remote host 106.200.206.164 from the loacl laptop
+  Running as SYSTEM
+  
+  
+  
+  
+  Run the Job every 15 minute
+  ===========================
+  
+  click on New item
+
+Enter name -> spring-petclinic
+select "Free style" and click ok
+
+Go to Source code management
+
+Choose Git
+Repository URL -> https://github.com/awsdevops009/spring-petclinic.git ( clone from github)
+
+Build Trigger
+
+Build Periodically - H/15 * * * * ( every 15 minute it will start building)
+
+Build-> invoke top-level Maven targets
+Goal - package
+
+then Save.
+
+Now i can wait for 15 min or manually click on Build Now to build the mvn project.
+
+click on Build Now.
+
+
+
+dpkg fails on Ubuntu Server 22.04 LTS  - Solution
+==========================================
+
+sudo mv /var/lib/dpkg/info /var/lib/dpkg/info_silent
+sudo mkdir /var/lib/dpkg/info
+sudo apt-get update
+sudo apt-get -f install
+sudo mv /var/lib/dpkg/info/* /var/lib/dpkg/info_silent
+sudo rm -rf /var/lib/dpkg/info
+sudo mv /var/lib/dpkg/info_silent /var/lib/dpkg/info

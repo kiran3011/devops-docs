@@ -1,0 +1,67 @@
+Gloabl Environment variable in Jenkins
+========================================
+
+https://www.jenkins.io/doc/book/pipeline/jenkinsfile/
+
+see the -> Using environment variables section
+
+All are global environemnt variable
+
+Create  a new job - Environment_variable
+Choose "Free style"
+
+create the Job
+
+Go to the job
+
+Discard build - 5
+
+Go to Build
+
+choose - Execute shell
+
+echo "Current Build Number is - $BUILD_ID"
+
+echo "Current Build is accessible  - $BUILD_URL"
+
+echo "java Library path  - $JAVA_HOME"
+
+echo "Executing in workspace  - $WORKSPACE"
+
+echo "jenkins URL path - $JENKINS_URL"
+
+echo "name of the jenkins job - $JOB_NAME"
+
+echo "name of node - $NODE_NAME"
+
+Now go and run the job.
+
+Now go and see the results in console output.
+
+you will able to see all the global environemnt variable output.
+
+
+Create custom environment variable
+=================================
+
+suppose we have some constant value and we want to use that value in multiple job.
+How to create custom environemnt variable.
+
+Manage jenkins -> Configure system
+
+Go to the Gloabl Properties.
+select Environment variables checkbox
+
+click on Add
+
+name - SYSTEM_ADMIN_NAME
+VALUE - Pradeep dash
+
+SYSTEM_ADMIN_EMAIL
+VALUE - awsdevops009@gmail.com
+
+No go the earlier Job and configure under Build section
+
+echo "system Admin name - $SYSTEM_ADMIN_NAME"
+
+echo "System Admin email - $SYSTEM_ADMIN_EMAIL"

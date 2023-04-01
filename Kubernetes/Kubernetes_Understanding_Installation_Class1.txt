@@ -1,0 +1,730 @@
+
+What is a Kubernetes ?
+======================
+
+- Started by Google in 2014. First release in 2015.
+- Kubernetes (K8s) is an open-source system for automating deployment, scaling, and management of containerized applications.
+- 100% open source
+- Written in Go language
+
+Kubernetes is a tool for automated management of containerized applications, also known as a container orchestration tool.
+
+
+Goal: Automate your application infrastructure and make it easy to manage.
+
+Documentation on kubernetes at the official kubernetes -> https://kubernetes.io/ 
+
+Kubernetes is all about managing containers. Kubernetes is the conductor of a container Orchestra.
+
+Containers wrap software in indenpendent, portable packages, making it easy to quickly run software in a variety of environments.
+
+When you wrap your software in a container, you can quickly and easily run it almost anywhere.  That makes containers great for automation.
+
+Containers are a bit like virtual machine, but they are smaller and start up faster. This means that automation can move quickly and efficiently with container.
+
+With containers, you can run a variety of software component accross a cluster of server. same containers are running on more than one server. so if one container fails ,it your application is running in another server.This can help ensure high availability and make it easier to scale resources.
+
+This raise some questions :
+
+1. How can i ensure that multiple instance of a piece of software are spread accross multiple server for high availability ?
+
+2. How can i deploy new code changes and roll them out across the entire cluster.
+
+3. How can i create new containers to handle additional load ( scale up)
+
+These kinds of task can all be done manually , but this is a lot of work.
+
+The solution to this problem is to use an orchestration tool to automate these kinds of management tasks.
+
+That is what kubernetes does !
+
+Kubernetes is first and foremost a platform for running and managing application.
+
+Cluster Architecture
+====================
+
+Kubeadm - kubeadm is a tool that will simplify the process of settings up our kubernetes cluster.
+
+Kube Master ( Container Runtime(Docker) , Kubeadm , kubelet, kubectl , control plane)
+Kube Node1 ( Container Runtime(Docker) , Kubeadm , kubelet, kubectl)
+
+Docker is the container runtime that we will be using.  container runtime is the software that actually runs the containers. Kubernetes supports several other container runtime (such as rkt and containerd) , but docker is the most popular.
+
+Here we will use containerd container runtime.
+
+Kubernetes Installation
+==========================
+
+1. Install all the below kubernetes command in both kube-master and worker-node
+
+create 2 ubuntu ec2 instance of type t2.medium or t2.micro
+
+Set the hostname for master machine
+
+sudo hostnamectl set-hostname k8s-control
+hostname
+
+exit and login again
+
+set the hostname of worker-node1
+
+sudo hostnamectl set-hostname k8s-worker1
+hostname
+
+set the hostname of worker-node2
+
+sudo hostnamectl set-hostname k8s-worker2
+hostname
+
+Login to master machine
+
+sudo vi /etc/hosts
+
+Private IP addresss of master k8s-control
+Private IP addresss of worker-node1 k8s-worker1 ( hostname of worker-node1)
+Private IP addresss of worker-node2 k8s-worker2  ( hostname of worker-node2)
+
+172.31.92.6 k8s-control
+172.31.10.1 k8s-worker1
+
+172.31.28.240 k8s-worker3
+
+Add the above there lines in both the worker-node machine
+
+sudo vi /etc/hosts
+
+172.31.18.94 k8s-control
+172.31.21.171 k8s-worker1
+
+Restart both the machine.
+
+Installation of kubernetes
+==========================
+
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+Run Below command in master node and worker node
+
+cat << EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+
+sudo modprobe br_netfilter
+
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+
+Install and configure containerd.
+--------------------------------
+
+sudo sysctl --system
+
+sudo apt-get update && sudo apt-get install -y containerd
+
+sudo mkdir -p /etc/containerd
+
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+
+
+On all nodes, disable swap.
+
+sudo swapoff -a
+
+sudo cat /etc/fstab
+
+
+On all nodes, install kubeadm, kubelet, and kubectl.
+---------------------------------------------------
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+cat << EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+sudo apt-get update
+
+sudo apt-get install -y kubelet=1.23.0-00 kubeadm=1.23.0-00 kubectl=1.23.0-00
+
+sudo apt-mark hold kubelet kubeadm kubectl ( It will not auto upgrade the other version)
+
+Configure cgroupDriver ( For New version of Kubernetes) - Install in Both the Node( Master and Worker)
+------------------------------------------------------
+
+sudo sed -i "s/cgroup-driver=systemd/cgroup-driver=cgroupfs/g" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+
+On the control plane node only, initialize the cluster and set up kubectl access.
+--------------------------------------------------------------------------------
+
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.23.0
+
+ mkdir -p $HOME/.kube
+ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+ kubeadm  version
+ 
+Run below command to in cluster node to get the join command
+
+kubeadm token create --print-join-command
+
+copy the command and execute in Node machine.
+
+ 
+Now worker nodes needs to join with kubernetes cluster node.
+
+Run below command to in cluster node to get the join command
+
+kubeadm token create --print-join-command
+
+Login to worker-node
+
+Run the join command as a sudo user 
+
+sudo kubeadm join 172.31.92.254:6443 --token dcx2w3.r0nt2xniqiit7jcy \
+        --discovery-token-ca-cert-hash sha256:3a93a351a79f263ae71d714a9dc1ac469dacb2b0cd39930f8034aacdf609d40f
+		
+kubeadm join 172.31.24.75:6443 --token 55jy5t.w2ukub8681te022x --discovery-token-ca-cert-hash sha256:17d66a9eea5a2015d2cdb0661b4c7ff10e77f8d9e3267b665857002b6c1f4de0
+		
+
+Verify the cluster is working.
+-----------------------------
+
+kubectl get nodes  ( status is not ready because we have not setup networking. Here we will use calico network plugin)
+
+
+==========================================================================
+If you are getting error in control machine , or not able to get the details of nodes.
+
+The connection to the server 172.31.24.75:6443 was refused - did you specify the right host or port?
+
+
+Run below command in control Machine
+------------------------
+sudo sed -i "s/cgroupDriver: systemd/cgroupDriver: cgroupfs/g" /var/lib/kubelet/config.yaml
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+kubeadm token create --print-join-command
+
+
+Then Reset the kubeadm in Worker Node and execute the join command in worker Node.
+
+sudo kubeadm reset  ( Need to run in worked node machine)
+
+sudo kubeadm join 172.31.86.131:6443 --token 7965eq.59gypf01xzk8txlc --discovery-token-ca-cert-hash sha256:48dd54620ae140a6fcbcaaf048f28ba8cc0fd7adbc64640435a9e35351fe4e38
+
+
+--------------
+1 - I created kubeadm-config.yaml
+
+# kubeadm-config.yaml
+kind: ClusterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+kubernetesVersion: v1.22.0
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+#cgroupDriver: systemd
+cgroupDriver: cgroupfs
+2 - kubeadm init --config kubeadm-config.yaml
+
+--------------------
+========================================================================
+
+
+Configuring Networking with calico
+====================================
+
+Kubernetes supports a variety of networking solution to provide networking between containers.Here we will use one called calico network plugin . you can also use Flannel plugin for cluster network.
+
+Once the Kubernetes cluster is set up, we still need to configure cluster networking in order to make the cluster fully functional. if you not install network plugin , the status will be in "Not Ready"
+
+Install the Calico network add-on. only in Master Node
+
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml  ( Run this without sudo)
+
+
+
+Run the below command in master node
+kubectl version
+
+kubectl get nodes	
+
+Verify that all the nodes now have a STATUS of Ready:
+
+kubectl get nodes ( Now nodes are ready status)
+
+kubectl get pods -n kube-system ( namespace kube-system , make sure all the backend system pods are running)
+
+kubectl cluster-info
+
+kubectl get all
+
+
+
+Adding a node to a cluster
+==========================
+
+- kubeadm join
+- Download Cluster Information
+- Node submit  a CSR
+- CA sign the CSR Automatically
+- Configures kubelet.conf
+
+Go to the Master Node
+=====================
+
+Run 'kubectl get nodes' on the master to see this node join the cluster.
+
+But all the nodes is still not ready.
+
+Install Docker in the Kubernetes master machine
+==============================================
+
+https://docs.docker.com/engine/install/ubuntu/
+
+sudo groupadd docker
+sudo usermod -aG docker ubuntu
+
+sudo apt-get update
+
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+
+
+Add Docker’s official GPG key:
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+Use the following command to set up the stable repository
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+Install Docker Engine
+
+sudo apt-get update 
+
+sudo apt-get install docker.io -y
+
+sudo systemctl start docker.service
+
+sudo systemctl status docker.service
+
+- Enable Docker service at stratup
+
+sudo systemctl enable docker.service
+
+sudo docker version
+
+sudo docker --version
+
+sudo docker run hello-world  
+	
+
+Running Jobs and CronJobs
+=========================
+
+
+- A Job is designed to run a containerized task successfully to completion.
+- CronJobs run Jobs periodically according to a schedule.
+- The restartPolicy for a Job or CronJob Pod must be OnFailure or Never .
+- Use activeDeadlineSeconds in the Job spec to terminate the Job if it runs too long
+
+Log in to the control plane node.
+
+Create a simple Job that runs the command echo This is a test! .
+
+vi my-job.yml
+
+-----------------------------
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: my-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: print
+        image: busybox:stable
+        command: ["echo", "This is a test!"]
+      restartPolicy: Never
+  backoffLimit: 4
+  activeDeadlineSeconds: 10
+
+---------------------------
+
+Run the Job.
+kubectl apply -f my-job.yml
+
+Check the status of the Job.
+kubectl get jobs  ( jobs has already completed)
+
+View the Job output. First, you will need to find the name of the Job's Pod
+
+kubectl get pods  ( pod has created for the job)
+
+kubectl logs $JOB_POD_NAME
+
+kubectl logs my-job-f62vf
+
+CronJob
+----------
+
+Create a CronJob that will run the Job task every minute
+
+
+vi my-cronjob.yml
+
+---------------------------
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: my-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: print
+            image: busybox:stable
+            command: ["echo", "This is a test!"]
+          restartPolicy: Never
+      backoffLimit: 4
+      activeDeadlineSeconds: 10
+
+----------------------------------
+
+
+schedule: "*/1 * * * *"  ( This cronjob will run on every minutes)
+
+kubectl apply -f my-cronjob.yml
+
+Check the CronJob status.
+
+kubectl get cronjob
+
+kubectl get jobs
+
+kubectl delete jobs --all
+
+kubectl delete pods --all && kubectl delete jobs --all 
+
+kubectl delete pods --all && kubectl delete jobs --all && get deployments
+
+	
+Containers and Pods
+===================
+
+In order to run and manage containers with Kubernetes, you will need to use pods.  we discuss the basics of what pods are and how they are related to containers within the world of Kubernetes. We will create a simple pod and then we will look at some ways to explore and interact with pods in your Kubernetes cluster.
+
+1. Pods are the smallest and most basic building block of the kubernetes model.
+2. A pod consist of one or more container , storage resources , and a unique IP address in the kubernetes cluster network.
+3. In order to run the containers, kubernetes schedules pods to run on servers in the cluster. When a pod is scheduled, the server will run the containers that are part of the pod. 
+
+Running a Pod
+==============
+
+There are several ways to schedule a pod:
+
+kubectl run command
+
+kubectl create/apply command with a Yaml file
+
+kubectl run test-pod --image=nginx:alpine
+
+kubectl get pods  ( List only pods)
+
+kubectl logs test-pod
+
+kubectl get all ( List all resources)
+
+kubectl get pods -o wide  ( It will display the IP address of the Pod and which node they are running)
+
+
+
+Expose a Pod Port
+----------------
+
+Pods and containers are only accessible within the kubernetes cluster by default.
+
+one way to expose a container port externally: kubectl port-forward
+
+ kubectl port-forward <name of the pod> 8080:80  ( 8080 -> external port , 80-> internal port)
+ kubectl port-forward pod/test-pod 8080:80
+ 
+kubectl create/apply command with a Yaml file
+
+Run in the master node
+====================
+1. Create a simple pod running an nginx container:
+2. create a pod.yaml in the kube-master node.
+
+vi pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+To run the pod.yaml file use below command
+	
+kubectl apply -f pod.yaml
+
+Get a list of pods and verify that your new nginx pod is in the Running state:
+
+ kubectl get pods
+ kubectl get pods -n kube-system ( It will display backend system pods)
+ 
+  kubectl get pods
+ kubectl describe pod nginx
+ 
+ kubectl get pods --all-namespaces
+ kubectl describe pod $pod_name 
+ 
+ kubectl describe pods/nginx
+ 
+ If pod is not running properly ,you can see the Events section to get more information)
+ 
+ Delete the pod:
+kubectl delete pod nginx
+
+kubectl get nodes
+
+Clustering and Nodes
+--------------------
+Nodes are an essential part of the Kubernetes cluster. They are the machines where your cluster's container workloads are executed.
+
+Kubernetes implements a clusterd architecture, In a typical production environments , you will have multiple server that are able to run your work loads (containers)
+
+These servers which actually run the  containers are called nodes.
+
+A Kubernetes cluster has one or more control servers which manage and control the cluster and host the kubernetes API. These control servers are usually separate from worker nodes, which run application within the cluster.
+
+Get more information about a specific node:
+kubectl describe node $node_name
+
+kubectl get nodes
+
+kubectl describe node < node name>
+
+we can see allocated resource section to get more info.
+
+
+
+
+
+
+Configuring Networking with Flannel ( Layer 3 virtual Network - Overlay Network)
+====================================
+
+Kubernetes supports a variety of networking solution to provide networking between containers.Here we will use one called Flannel plugin.
+
+Once the Kubernetes cluster is set up, we still need to configure cluster networking in order to make the cluster fully functional.  we need the process of configuring a cluster network using Flannel. You can find more information on Flannel at the official site: https://coreos.com/flannel/docs/latest/. Here are the commands used in this lesson:On all three nodes, run the following:
+
+For networking to work we need to turn on net.bridge.bridge-nf-call-iptables in master and all the worker nodes.
+
+echo "net.bridge.bridge-nf-call-iptables=1" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p  ( run this command , so that it will effect immediately)
+
+Install Flannel in the cluster by running this only on the Master node:
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
+
+
+
+
+
+
+You can do so by using the following command:** ``` kubectl delete svc nginx-service ``` Here are the commands used in the demonstration to deploy the Stan's Robot Shop application: - Clone the Git repository: ```  ``` - Create a namespace and deploy the application objects to the namespace using the deployment descriptors from the Git repository: ``` 
+
+  ``` - Get a list of the application's pods and wait for all of them to finish starting up: ``` kubectl get pods -n robot-shop -w ``` - Once all the pods are up, you can access the application in a browser using the public IP of one of your Kubernetes servers and port 30080: ``` http://$kube_server_public_ip:30080 ```
+  
+  
+  Commands
+  =========
+  
+  root@ip-172-31-78-145:/home/ubuntu/kubernetes-micro/K8s# history
+    1  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    2  sudo add-apt-repository    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+    3  sudo apt-get update
+    4  sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
+    5  sudo apt-mark hold docker-ce
+    6  sudo docker version
+    7  service docker status
+    8  curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    9  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+   10  sudo apt-get update
+   11  sudo apt-get install -y kubelet=1.12.7-00 kubeadm=1.12.7-00 kubectl=1.12.7-00
+   12  sudo apt-mark hold kubelet kubeadm kubectl
+   13  kubeadm version
+   14  sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+   15  mkdir -p $HOME/.kube
+   16  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   17  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   18  kubectl version
+   19  kubectl get nodes
+   20  echo "net.bridge.bridge-nf-call-iptables=1" | sudo tee -a /etc/sysctl.conf
+   21  sudo sysctl -p
+   22  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
+   23  kubectl get nodes
+   24  kubectl get pods -n kube-system
+   25  kubectl run test-pod --image=nginx:alpine
+   26  kubectl get pods
+   27  kubectl get all
+   28  kubectl port-forward pod/test-pod-dddb5bdc9-lmvs7 8080:80
+   29  vi pod.yaml
+   30  ls
+   31  kubectl apply -f pod.yaml
+   32  kubectl get pods
+   33  kubectl describe pod nginx
+   34  kubectl get pods --all-namespaces
+   35  kubectl describe pod test-pod-dddb5bdc9-lmvs7  -n default
+   36  kubectl get pods
+   37  kubectl delete test-pod-dddb5bdc9-lmvs7
+   38  kubectl delete pod  test-pod-dddb5bdc9-lmvs7
+   39  kubectl get pods
+   40  kubectl describe pod nginx -n default
+   41  kubectl get pods
+   42  kubectl delete pod nginx
+   43  kubectl get pods
+   44  cat pod.yaml
+   45  kubectl get nodes
+   46  kubectl describe node ip-172-31-57-229
+   47  vi deployment-nginx.yaml
+   48  kubectl get pods
+   49  kubectl apply -f deployment-nginx.yaml
+   50  kubectl get pods
+   51  vi busybox.yaml
+   52  kubectl apply -f busybox.yaml
+   53  kubectl get pods
+   54  kubectl get pods -o wide
+   55  kubectl exec busybox -- curl 10.244.1.7
+   56  kubectl get pods
+   57  kubectl get rs --all-namespaces
+   58  kubectl delete deployment test-pod-dddb5bdc9 --namespace=default
+   59  kubectl delete pod test-pod-dddb5bdc9 --namespace=default
+   60  kubectl get pods
+   61  kubectl delete deployment test-pod-dddb5bdc9-m9k67 --namespace=default
+   62  kubectl delete deployment test-pod-dddb5bdc9-m9k67 -- namespace=default
+   63  kubectl get pods
+   64  kubectl delete deployment test-pod-dddb5bdc9-m9k67
+   65  kubectl get pods
+   66  kubectl delete deployment -n default
+   67  kubectl delete deployment test-pod-dddb5bdc9-m9k67  -n default
+   68  kubectl delete deployment test-pod-dddb5bdc9-m9k67 -n default
+   69  kubectl get pods
+   70  kubectl get pods -n kube-system
+   71  sudo systemctl status kubelet
+   72  ls
+   73  cat deployment-nginx.yaml
+   74  vi service.yaml
+   75  create apply -f service.yaml
+   76  vi service.yaml
+   77  rm service.yaml
+   78  vi service.yaml
+   79  create apply -f service.yaml
+   80  cat << EOF | kubectl create -f -
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-service
+spec:
+  selector:
+    app: nginx
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    nodePort: 30080
+  type: NodePort
+EOF
+
+   81  kebectl get pods
+   82  kubectl get pods
+   83  kubectl get svc
+   84  curl 3.80.6.209:30080
+   85  pwd
+   86  git clone https://github.com/awsdevops009/kubernetes-micro.git
+   87  ls
+   88  cd kubernetes-micro/
+   89  ls
+   90  cd K8s/
+   91  ls
+   92  cd descriptors/
+   93  ls
+   94  kubectl get pods
+   95  cd ..
+   96  kubectl create namespace robot-shop
+   97  kubectl -n robot-shop create -f descriptors/
+   98  kubectl get pods
+   99  kubectl get svc
+  100  kubectl delete service nginx-service
+  101  kubectl -n robot-shop create -f descriptors/
+  102  kubectl get pods
+  103  kubectl delete pod nginx-d55b94fd-xs5p9
+  104  kubectl delete pod nginx-d55b94fd-zllw8
+  105  kubectl get pods
+  106  kubectl -n robot-shop create -f descriptors/
+  107  cd descriptors/
+  108  ls
+  109  vi web-service.yaml
+  110  kubectl get pods
+  111  kubectl -n robot-shop create -f descriptors/
+  112  cd ..
+  113  kubectl -n robot-shop create -f descriptors/
+  114  kubectl get pods
+  115  kubectl get svc
+  116  cd descriptors/
+  117  vi user-service.yaml
+  118  kubectl get svc
+  119  kubectl get ns
+  120  kubectl get pod -n robot-shop
+  121  kubectl get pod -n robot-shop -o wide
+  122  kubectl get pods -n robot-shop -w
+  123  ls
+  124  cat web-service.yaml
+  125  kubectl get pods
+  126  kubectl delete default
+  127  kubectl delete namespace default
+  128  kubectl delete namespace robot-shop
+  129  cd ..
+  130  kubectl get pod -n robot-shop
+  131  kubectl create namespace robot-shop
+  132  kubectl -n robot-shop create -f descriptors/
+  133  kubectl get pods -n robot-shop
+  134  kubectl get pods -n robot-shop -o wide
+  135  history
+==========================
+

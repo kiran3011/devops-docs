@@ -1,0 +1,310 @@
+
+Jenkins Job DSL ( Domain Specific language)
+================
+
+The Jenkins Job DSL plugin was designed to make it easier to manage jobs.
+ - If you don't have a lot of jobs , using the UI is the easiest way.
+ - when the Jobs grow , maintaing becomes difficult and lots of work.
+ 
+ The jenkins plugin solves this problem, and you get a lot of extra benefits.
+  - Version control , history , audit log , easier job restore when something goes wrong.
+  
+  
+Jenkins Installation on Ubuntu
+==============================
+
+1. Jdk 11
+2. Jenkins
+3. Maven , Git
+
+Login to Ubuntu Server
+
+user - ubuntu
+
+sudo su
+apt-get update
+
+
+apt-get install git
+apt-get install tree
+
+1. Verify Installed Java Version
+
+java -version
+(Only Java8 or Java11 are recommended)
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+apt install openjdk-11-jre-headless ( Not Required to install)
+
+java -version
+
+pwd to see the current path -> /home/ubuntu
+
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64/jre
+EOL
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+4. First, add the repository key to the system
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+5. Next, append the Debian package repository address to the server’s sources.list
+
+su
+
+6. Update System packages
+
+sudo apt update
+
+7. Install Jenkins and its dependencies
+
+sudo apt -y install jenkins
+
+8. Start Jenkins using systemctl
+
+sudo systemctl start jenkins
+
+9. Get Service Status
+
+sudo systemctl status jenkins  ( if not exit , press ctrl+c)
+
+systemctl status jenkins.service
+
+10. Enable Jenkins Service
+
+sudo systemctl enable jenkins
+
+
+
+
+Take the public IP address of ec2 instance , open in a chrome browser
+
+public IP:8080
+
+
+11. Use the cat command to display the password:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+
+
+click on select Installed jenkins
+
+Username: testuser
+Password: testuser
+Confirm password: testuser
+Full name: Pradeep Dash
+E-mail address: awsdevops009@gmail.com
+
+Create Job
+==========
+
+Go to Jenkins
+click on create New item
+
+Item Name -> My_First_job
+
+select "Freestyle project"
+click on ok
+
+Go to Build
+Select - Execute shell
+echo " Hello , This is my first jenkins job"
+
+Build Now 
+will see the output in console output.
+
+Go the Job
+click on configure
+
+Build periodically - * * * * *
+
+Add the timestamp
+
+Github Integration
+==================
+
+Manage Jenkins-> manage plugin
+click on "Available"
+
+search for "Github Integration"
+
+select the plugin and "install without restart"
+
+Now go to Manage jenkins -> manage plugin
+click on "Installed"
+Now you can see "Github Integration" should present.
+
+
+Maven Install
+=============
+
+Login to the server’s
+
+mvn --version
+
+apt install maven
+
+Configure jenkins with Java , Git and maven
+===========================================
+
+verify where java has installed ubuntu machine
+
+cd /usr/lib/jvm/
+ls
+
+cd java-11-openjdk-amd64
+pwd
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+Manage Jenkins-> Global tool Configuration
+
+click on "Add Jdk"
+
+name - Localjdk
+
+uncheck the " Install automatically" check box
+
+enter the path in JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64
+
+Go to the Git section
+
+Name - LocalGit
+Path to Git executable - git
+
+maven configure
+--------------
+Login to server where maven installed
+go to - /usr/share/maven
+
+path - /usr/share/maven
+
+
+Go to the Maven section
+click on Add maven
+
+name - LocalMaven
+uncheck the " Install automatically" check box
+
+MAVEN_HOME -> /usr/share/maven
+
+click on save
+
+
+Go to jenkins
+Create  a new Item - My_First_Maven
+
+choose Freestyle
+
+Select Discard Old Build
+maximum of build to keep - 5
+
+Source Code management
+
+Git
+Repository URL - https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+Under Build
+
+Invoke top-level maven target
+
+choose - LocalMaven
+
+Goal - clean package  ( we can define clean build or clean package)
+
+click on Advance
+
+verify where your pom.xml file is present
+
+POM - maven-samples/single-module/pom.xml
+
+Save the Project
+
+click Build Now
+
+Project should build successfully.
+
+
+
+
+
+Jenkins Job DSL
+================
+
+manage Jenkins -> manage Plugin
+
+click on Available Tab - search for "Job DSL"
+
+check the "Job DSL" and install without restart
+
+Then Restart the jenkins
+
+Verify Job DSL Plugin is installed or not
+-----------------------------------------
+
+manage Jenkins -> manage Plugin
+click on Installed Tab - search for "Job DSL"
+
+The you will see , it is already installed.
+
+
+Create a DSL Job
+=================
+
+Create a new Item - Maven_seed_job
+
+Select the Free style
+
+create the job
+
+Under SCM
+
+Git -
+
+Repository URL-  https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+Under Build option
+
+choose -> process Job DSLs
+
+Look on Filesystem
+DSL Scripts - MavenProjectDSL.groovy ( DSL File name in Github is inside Root directory)
+
+Save the Job
+
+Then run the job - Build now to execute the job
+
+The job got failed due to , we need to approve the DSL job ( ERROR: script not yet approved for use)
+
+To approve the DSL Job
+---------------------
+
+manage jenkins - security
+
+go to "In-process script approval" under security.
+
+You will able to see one job is waiting for approval
+
+click on Approve Button
+
+Go to the Maven_seed_job and click the Build now
+
+Go to the console output , you will able to see "First-Maven-Project-Via-DSL" is added.
+
+Go to the First-Maven-Project-Via-DSL
+
+see the console output
+
+job run successfully and jar file is created in workspace.
+
+

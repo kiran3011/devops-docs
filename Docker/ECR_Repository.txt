@@ -1,0 +1,99 @@
+ECR Repository
+===============
+
+Go to ECR
+
+click on Get started to create Repository
+select - Private
+Repository name - aws-ecs
+
+Go to IAM User
+
+UserName - aws-ecs-user (pwd-90...aA@)
+create the user
+
+Attached below Policy to aws-ecs-user
+
+AmazonECS_FullAccess
+AmazonEC2ContainerRegistryFullAccess
+
+aws-ecs-user is provided with proper perimission.
+
+Go to ec2 Ubuntu instance
+
+Install AWS CLI in ubuntu machine
+
+sudo apt install python3-pip
+pip3 install awscli
+7. aws --version ( To verify the AWS cLI)
+
+aws configure
+
+
+aws ecr get-login --region us-east-1 --no-include-email  ( It will generate long key to login to ecr registory.
+
+Copy the whole key and execute again.
+
+Now you should able to Login successfully.
+
+output: Login Succeeded
+
+
+Now Go to ECR AWS console
+select registory and click on push command
+
+we have already created the docker image
+
+docker images
+
+you can see aws-ecs image is present.
+
+
+we need to execute both command to tag and push the image into ECR registory
+
+docker tag <image Name> 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest  ( aws-ecs is the existing repository name)
+
+
+
+docker tag aws-ecs:latest 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest
+docker push 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest
+----------------
+
+docker tag kiran3011/nginxtest_image1:v1 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest ( here my image name is ->dashpradeep/nginxtest_image1:v1)
+docker push 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest
+
+
+docker tag kiran3011/nginxtest_image1:v1 314554362330.dkr.ecr.us-east-1.amazonaws.com/kiran3011:nginx-realease1  ( here registory name is kiran3011)
+docker push 314554362330.dkr.ecr.us-east-1.amazonaws.com/kiran3011:nginx-release1
+
+
+docker images  ( Now you can see image is properly tagged.)
+
+docker push 314554362330.dkr.ecr.us-east-1.amazonaws.com/kiran3011:latest
+
+Now latest image aws-ecs is pushed to ECR repository.
+
+Go to AWS ECR console
+
+verify latest images should available in aws-ecs repository.
+
+Now go to EC2 Ubuntu instance
+
+aws ecr describe-repositories ( It will display all the list of repositories)
+
+aws ecr describe-images --repository-name aws-ecs ( To see particular registory)
+
+Now go to EC2 Ubuntu instance and delete all the  image.
+
+ docker rmi -f < ImageID>
+ 
+Now we will pull the image from ECR.
+
+docker pull <image tag> from the ECR console Repo.
+docker pull <908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest>
+
+
+docker pull 314554362330.dkr.ecr.us-east-1.amazonaws.com/kiran3011:nginx-release1
+
+
+docker tag aws-ecs:latest 908108847798.dkr.ecr.us-east-1.amazonaws.com/aws-ecs:latest

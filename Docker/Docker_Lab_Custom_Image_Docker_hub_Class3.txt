@@ -1,0 +1,358 @@
+Docker
+=======
+
+Installing docker on Linux(Ubuntu)
+==========================================
+1 Create an aws ubuntu instance
+2 Connect to it using git bash
+3 Open http://get.docker.com
+4 Copy and paste the first two commands
+  
+  apt-get update
+
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  
+  sh get-docker.sh
+
+To check if docker is installed or not
+docker --version  
+
+docker version ( To verify docker client and docker server has installed or not)
+
+
+Image Basics
+================
+
+The Docker image is the Source of a Container.
+
+Comprised of Layers -> All Code , runtime , libraries , variable and configuration are supplied via a layered Dokcerfile.
+
+Layers are Cached -> This means images are more reusable , quicker to deploy and take up less space than a standard virtual machine Image.
+
+ 
+
+Creating a Dockerfile
+---------------------
+
+- Specify a base image
+
+- Run some commands to install additional program . Add in some additional configuration to run commands, to add in some dependencies
+  or some more software, some more programs that we need to successfully create and execute our container.
+  
+- Specify a command to run on container startup ( specify a startup command for the image.So any time we take that image and create a container out of it.
+
+
+kiranImportant KeyWord
+-----------------
+FROM - This represent the base image from which we want to create our customize image.
+
+MAINTAINER - This is the name of author or organization that has created this Dockerfile
+
+CMD - This is used for running any process from outside the container. Set the command to be executed when running the image. 
+
+ENTRYPOINT - Determines which executable runs when the container starts. Every Docker container start the default process as as long as this process is running , the container will be in running state. The ENTRYPOINT is used for defining what should be the default process.
+
+RUN - Executes a command to help build your image. This is used for running command within the container. It is generally used for running command related to package management.
+
+COPY - Copies files into your image from the local disk. used for copying file from host machine to the container.
+
+ADD - This can also be used for copying files from host to container. It is also used for downloading files from remote server.
+
+VOLUME - Sets a disk share. This is used for attaching an external device or directory , directly onto a container as a defaultvolume.
+
+USER - This is used to specify who is the default user that should login into the container.
+
+WORKDIR - This is used to specify the default working directory 
+
+LABEL - Adds useful by giving label to the container
+
+STOPSIGNAL - This is used to specify the key sequence to given to stop the container.
+
+ENV - Set an environment variable. This is used for specifying which variable should be passed as environment variable to the container.
+
+EXPOSE - Opens up networking ports. This is used for specifying which port should be open as  internal port for the container
+
+The advantage is of using Doockerfile over commit command is , we can perform version controllling on the Dockerfile.
+:mynginx ..
+
+vi dockerfile
+
+FROM nginx
+MAINTAINER - pradeep dash
+
+docker build -t mynginx .  ( -t is the Tag name of the new image)
+
+
+
+Centos Images
+=============
+
+vi dockerfile
+
+FROM centos
+MAINTAINER - pradeep dash
+CMD ["date"]
+
+
+docker build -t mycentos .  ( -t is the Tag name of the new image)
+
+docker run --name c2 -it mycentos ( it will show only date)
+
+At a same time we can execute only one CMD command
+
+
+vi dockerfile
+
+FROM centos
+MAINTAINER - pradeep dash
+CMD ["date"]
+CMD ["ls","-la"]
+
+docker build -t mycentos .
+
+docker run --name c3 -it mycentos  ( Now it will display ls -la output)
+
+docker ps -a
+
+
+Dockerfile
+----------
+
+# use an existing docker image as a base 
+FROM alpine
+
+# Step 2: Download and install dependency
+
+RUN apk add --update redis
+
+# Step 3: Tell the image what to do when it starts as container
+
+CMD ["redis-server"]
+
+------------------------------------
+
+docker build .
+
+docker images
+
+docker run <imageID>
+
+Run below command in Redis server
+
+redis-cli ping
+
+sudo mkdir /etc/redis
+sudo mkdir /var/redis
+
+What a Base Images
+==================
+	
+- we wanted to use the Alpine Docker image as kind of an initial operating system or a starting point for the image that we are creating.
+
+- Windows is a OS might have a program that you need to use your computer effectively. You might use Mac OS because it has a built in terminal. 
+
+- you use one of these default operating systems because it has a set of preinstalled programs that is useful to you and what you are trying to accomplish.
+
+- we just made use of Alpine as a base image, as kind of like an operating system of sorts, because it includes a different set of programs that are very useful. 
+
+We are trying to install and run redis and the Alpine base image has a set of programs inside of it that are very useful for installing and running Radis the command.
+
+RUN apk add --update redis
+
+APK is a program called Apache  manager that comes preinstalled.on the Alpine image and we can use that package manager that is built into Alpine to automatically download and install redis server  for us. 
+
+Build Process of Dockerfile
+===========================
+
+docker build .
+
+Build - The build command is  to take a Docker file and generate an image out of it.
+
+DOT command (.) - The DOT command is specifying what is called the build context. That build context is essentially the set of files and folders that belong to our project. It's a set of files and folders of encapsulate or wrap in this container.
+
+- We basically just downloaded an initial starting image to use as a base.
+
+- After base Image step ,  from second command of the dockerfile , it everytime create a new container  and run some set of command and remove the container before third command. again in third step , it create a new container and run some set of command and remove the container before next step start.
+
+Rebuild with Cache
+==================
+
+Whenever we are modifying the dockerfile  , and do a build to create an image , dockerfile file always use from cache for unmodified step. it only run from the scratch for  step which is modified.
+
+In Below Example , I have added  "RUN apk add --update gcc" after step 2 , so there will be no new build before step 2. it will use cache data to build the image.
+
+Anytime that we make a change to our Docker file, we're going to have to only rerun the series of steps from the changed line on down.
+
+Dockerfile
+----------
+
+# use an existing docker image as a base 
+FROM alpine
+
+# Step 2: Download and install dependency
+
+RUN apk add --update redis
+RUN apk add --update gcc
+
+# Step 3: Tell the image what to do when it starts as container
+
+CMD ["redis-server"]
+
+----------------------------------
+
+docker build .
+
+docker images
+
+docker run <imageID>
+
+Run below command in Redis server
+
+redis-cli ping
+
+sudo mkdir /etc/redis
+sudo mkdir /var/redis
+==================================================================
+
+
+
+
+Sample Dockerfile
+-------------------
+
+FROM ubuntu:latest
+MAINTAINER Pradeep Dash "awsdevops009@gmail.com"
+                                                     
+RUN apt-get update
+CMD["echo", "hello-world"]
+
+
+------------------------------------------------
+
+RUN Instruction : used to run commands against our images that we are building
+
+
+
+
+
+Create a Apache Docker file
+
+mkdir myapache
+
+vi Dockerfile
+
+FROM ubuntu:14.04
+MAINTAINER Pradeep Dash "awsdevops009@gmail.com"
+                                                     
+RUN apt-get update && apt-get install apache2 -y
+CMD ping google.com
+
+
+Create a new Docker Image, Run as Container and Push to Docker Hub
+=====================================================================
+
+Create Image -> Create the container -> push or upload the image to DockerHub
+
+
+
+Create Dockerfile and copy our customized index.html
+
+mkdir nginx-image
+cd nginx-image
+
+open the below URL in the browser
+
+hub.docker.com 
+
+Username - username@gmail.com/password
+
+docker login --username=<username>
+
+Login to putty
+install docker 
+
+docker login
+username-> <Username>
+password
+
+It will display Login successed.
+
+
+
+vi Dockerfile
+
+FROM nginx
+COPY index.html /usr/share/nginx/html
+
+
+create a index.html
+
+vi index.html
+
+<html>
+<h1> Welcome to my custom Image Nginx </h1>
+</html>
+
+
+Build Docker Image & run it
+---------------------------
+
+docker rmi -f <imageID>  ( To delete existing images)
+
+docker build -t dashpradeep/mynginx_image1:v1 .
+
+docker images
+
+docker run --name mynginx1 -p 80:80 -d dashpradeep/mynginx_image1:v1
+
+docker ps
+
+docker ps -a
+
+docker rm $(docker ps -a -q)  ( To remove all the container)
+
+
+docker build -t dashpradeep/mynginx_image1:v1 .  ( To create the image)
+
+docker run --name mynginx1 -p 80:80 -d dashpradeep/mynginx_image1:v1
+
+Replace your docker hub account Id
+docker build -t <your-docker-hub-id>/mynginx_image1:v1 .
+docker run --name mynginx1 -p 80:80 -d <your-docker-hub-id>/mynginx_image1:v1
+
+Take the Public IP of the Ec2 instance and run in a browser
+
+http://3.85.34.137/:80
+
+Tag & push the Docker image to docker hub
+------------------------------------------
+
+docker images
+
+docker tag dashpradeep/mynginx_image1:v1 dashpradeep/mynginx_image1:v1-release
+docker push dashpradeep/mynginx_image1:v1-release
+
+Replace your docker hub account Id
+docker tag <your-docker-hub-id>/mynginx_image1:v1 <your-docker-hub-id>/mynginx_image1:v1-release
+docker push <your-docker-hub-id>/mynginx_image1:v1-release
+
+
+
+Image Management
+===============
+
+docker pull hello-world
+docker pull alpine
+
+docker pull tomcat
+
+docker image ls ( To see the list of image present in locally)
+
+docker image rm hello-world
+
+docker image prune -a  ( It will remove the images which doesn't have any container created)
+
+docker image inspect
+
+
+

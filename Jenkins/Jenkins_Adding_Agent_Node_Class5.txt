@@ -1,0 +1,716 @@
+master-slave configuration
+===========================
+
+Jenkins Installation on Ubuntu
+==============================
+
+1. Jdk 11
+2. Jenkins
+3. Maven , Git
+
+Login to Ubuntu Server
+
+user - ubuntu
+
+sudo su
+apt-get update
+
+
+apt-get install git
+apt-get install tree
+
+1. Verify Installed Java Version
+
+java -version
+(Only Java8 or Java11 are recommended)
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+apt install openjdk-11-jre-headless ( Not Required to install)
+
+java -version
+
+pwd to see the current path -> /home/ubuntu
+
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64/jre
+EOL
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+4. First, add the repository key to the system
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+5. Next, append the Debian package repository address to the server’s sources.list
+
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+6. Update System packages
+
+sudo apt update
+
+7. Install Jenkins and its dependencies
+
+sudo apt -y install jenkins
+
+8. Start Jenkins using systemctl
+
+sudo systemctl start jenkins
+
+9. Get Service Status
+
+sudo systemctl status jenkins  ( if not exit , press ctrl+c)
+
+systemctl status jenkins.service
+
+10. Enable Jenkins Service
+
+sudo systemctl enable jenkins
+
+
+
+
+Take the public IP address of ec2 instance , open in a chrome browser
+
+public IP:8080
+
+
+11. Use the cat command to display the password:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+click on select Installed jenkins
+
+Username: testuser
+Password: testuser
+Confirm password: testuser
+Full name: Pradeep Dash
+E-mail address: awsdevops009@gmail.com
+
+Maven Install
+=============
+
+Login to the server’s
+
+mvn --version
+
+apt install maven
+
+
+Create Job
+==========
+
+Goto Jenkins
+click on create New item
+
+Item Name -> My_First_job
+
+select "Freestyle project"
+click on ok
+
+Go to Build
+Select - Execute shell
+echo " Hello , This is my first jenkins job"
+
+Build Now 
+will see the output in console output.
+
+Go the Job
+click on configure
+
+Build periodically - * * * * *
+
+Add the timestamp
+
+Github Integration
+==================
+
+Manage Jenkins-> manage plugin
+click on "Available"
+
+search for "Github Integration"
+
+select the plugin and "install without restart"
+
+Now go to Manage jenkins -> manage plugin
+click on "Installed"
+Now you can see "Github Integration" should present.
+
+
+
+
+Configure jenkins with Java , Git and maven
+===========================================
+
+verify where java has installed ubuntu machine
+
+cd /usr/lib/jvm/
+ls
+
+cd java-11-openjdk-amd64
+pwd
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+Manage Jenkins-> Global tool Configuration
+
+click on "Add Jdk"
+
+name - Localjdk
+
+uncheck the " Install automatically" check box
+
+enter the path in JAVA_HOME = /usr/lib/jvm/java-11-openjdk-amd64
+
+Go to the Git section
+
+Name - LocalGit
+Path to Git executable - git
+
+maven configure
+--------------
+Login to server where maven installed
+go to - /usr/share/maven
+
+path - /usr/share/maven
+
+
+Go to the Maven section
+click on Add maven
+
+name - LocalMaven
+uncheck the " Install automatically" check box
+
+MAVEN_HOME -> /usr/share/maven
+
+click on save
+
+
+Go to jenkins
+Create  a new Item - My_First_Maven
+
+choose Freestyle
+
+Select Discard Old Build
+maximum of build to keep - 5
+
+Source Code management
+
+Git
+Repository URL - https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+Under Build
+
+Invoke top-level marvan target
+
+choose - LocalMaven
+
+Goal - clean package  ( we can define clean build or clean package)
+
+click on Advance
+
+verify where your pom.xml file is present
+
+POM - maven-samples/single-module/pom.xml
+
+Save the Project
+
+click Build Now
+
+Project should build successfully.
+
+
+
+jenkins master and Slave
+========================
+
+- Make Hand Shake between master and slave (Nodes)
+- Jenkins runs jobs on Node
+- 
+
+
+Setup Master-Slave using SSH
+----------------------------
+
+In Master machine
+------------------
+
+Install jenkins in Master Machine
+Install java
+Install Maven
+
+In Slave Machine
+----------------
+
+create a ubuntu slave machine
+
+connect to the Slave machine using putty
+
+whoami ( To the user logged in)
+
+sudo apt-get update
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless
+
+java -version
+
+sudo apt-get install maven
+
+create a folder jenkins where jenkins will execute the job
+
+pwd ( now you are in /home/ubuntu/)
+
+mkdir jenkins
+
+chmod 777 -R jenkins
+
+cd jenkins
+
+pwd ( now you are in /home/ubuntu/jenkins)
+
+/home/ubuntu/jenkins
+
+---------------------------
+
+
+login to jenkins dashboard
+
+Manage Jenkins - click on Manage Nodes and cloud
+
+click on New Node
+
+Node name - jenkins-slave-1
+
+select -> permanent
+
+clic on ok.
+
+Number executor - 2 ( How many thread or job you want to run concurrently in one Agent)
+
+Remote root directory - /home/ubuntu/jenkins ( location of workspace where job will execute)
+
+Label - jenkins-slave-1
+
+Launch method - launch agent via SSH
+
+Host - Public IP address slave1 machine ( for e.g 52.90.24.121)
+
+
+credential - click on Add and select "jenkins"
+
+Kind - SSH Username with private key
+
+username- ubuntu 
+
+private key
+\Select Enter directly - 
+click on add
+
+Add the content of the  .pem file for your slave  machine.
+
+Host Key Verification strategy - Non verifying Verification strategy
+
+click on save
+
+
+Save the screen.
+
+After some time slave will come into running mode.
+
+Now Go to Jenkins Dashboard , you can see "jenkins slave is running with 2 executor.
+
+Login to Jenkins Dashboard
+
+Go to Job in jenkins - click on configure
+
+select the check box "Restrict where this project can be run"
+
+select the - jenkins-slave-1 ( Name of the Label)
+
+
+How to run a pipeline job in Agent Node
+-----------------------------------------
+
+create a pipeline job - jenkins-pipeline-agent
+
+pipeline {
+      agent {label 'jenkins-slave-1'}
+	  stages {
+	    stage('Build') {
+		   steps {
+		      sh "rm -rf springExample"
+		      sh "git clone https://github.com/awsdevops009/springExample.git"
+			  sh "mvn clean -f springExample"
+			  echo ' Job Finished'
+			  }
+             }
+        }
+	}	
+	
+	
+	Now run the job
+	
+	Go to console Output - you will see it is run on jenkins slave1
+	
+=====================================================
+
+Concurrent Build
+----------------
+
+Make sure slave1 machine has two executor job number.
+
+Go to Jenkins Dashboard
+click on My views
+click on "+" to create a new views
+View Name - Concurrent jobs
+
+select the "List view" and click ok.
+
+click on new Job
+
+Job Name - Concurrent Job1
+Freestyle job
+
+Under Build section
+
+Select - Execute shell
+
+#!/bin/bash
+# Start of the for loop
+
+for a in 1 2 3 4 5 6 7 8 9 10
+do 
+	#if a is equal to 5 sleep the loop
+	if [ $a == 5 ];
+	then
+		sleep 30
+	fi
+	#print the value
+	echo "Iteration no $a"
+done
+
+click on save
+
+
+Same way create two more job with same script
+Job2 - 	Concurrent Job2
+Job3 - Concurrent Job3
+
+Now execute all the job
+
+Now 2 job will execute on slave1 machine and one job in master.
+
+
+Now i want to execute specefic job in specific Machine
+=====================================================
+
+Go To Manage Jenkins - Manage Nodes
+
+click on jenkins-slave-1 
+
+see the Label - jenkins-slave-1
+
+Usage - Only build jobs with label expressions matching this node
+
+Go to the concurrent job1
+configure
+
+select "Restrict where this project can be run" check box
+
+Enter - jenkins-slave-1
+
+Same way configure the job2 and job3 in same slave - jenkins-slave-1
+
+Now run all the job at same time.
+
+Only 2 job will run at same time because we have only 2 executor is available on the slave.
+
+when both job finish , it will run third job.
+
+
+
+
+Master/slave setup
+-------------------
+1. create a new Ubuntu instance and name it - slave
+2. connect to the slave instance using putty
+
+3. Set password for default user - ubuntu
+   sudo passwd ubuntu
+4.  Edit sshd_config file for allowing ssh access
+	sudo vi /etc/ssh/sshd_config
+    change the "passwordauthentication"  to yes  ( By default it is "no")  
+
+5. Restart the ssh
+   sudo service ssh restart
+6. Connect to Jenkins master machine using putty
+   ssh-keygen   ( This will generate two key private key and public key in .ssh folder)
+7. Copy the public key into slave machine
+   ssh-copy-id ubuntu@slave_priave_ip  ( It will  copy the content of public rsa file to "authorized_keys" files in salave machine)
+8. Once the above step is completed , now master instance can connect to slave machine
+   ssh ubuntu@slave_priave_ip  
+
+passwordless SSH ( secure shell)
+================================
+SSH is a protocol to connect to one linux server to another linux server.
+
+It is a communication between two user which is present in two different linux machine.
+
+
+
+Steps
+=====
+
+Create  a Jenkins Master machine and insttall Jenkins on the master machine
+
+In Salve machine
+------------------
+create a ubuntu slave machine
+
+connect to the Slave machine using putty
+
+whoami ( To the user logged in)
+
+sudo passwd ubuntu
+
+Enter the password - test1234
+confirm password - test1234
+
+sudo vi /etc/ssh/sshd_config
+
+change the "passwordauthentication"  to yes  ( By default it is "no") - 
+
+sudo service ssh restart
+
+sudo apt-get update
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless
+
+java -version
+
+apt-get install git
+
+In Master Machine
+-----------------
+
+
+Login to the jenkins master machine using putty
+
+whoami ( It should be ubuntu)
+
+ssh ubuntu@<slave_priave_ip> 
+
+Enter the password of slave machine - test1234
+
+Now it will  login to slave machine
+
+exit  ( back to root/ubuntu user)
+
+Generate SSH KeyGen in master machine
+-----------------------------------
+
+ssh-keygen ( it will generate two key private key and public key)
+
+cd ~/.ssh
+ls ( you will able to see private and public key)
+
+Now copy the ssh key to slave machine
+
+ssh-copy-id ubuntu@slave_priave_ip  ( It will  copy the content of public rsa file to authorized_keys files in salave machine)
+Enter the password of slave machine - test1234
+
+Now without password , i am able to connect from master machine to client machine.
+
+ssh ubuntu@<slave_priave_ip>   ( It will not ask password)
+
+
+We need to installed same version of java in both mastter and slave machine.
+
+ssh ubuntu@<slave_priave_ip>  date
+ssh ubuntu@<slave_priave_ip>  ls -l  ( ls -l command will execute in slave1 machine)
+
+In Slave Machine
+----------------
+
+Download slave.jar
+------------------
+
+ Download slave.jar file in the slave machine from master machine.
+ 
+ wget http://<master_priavetip>:8080/jnlpJars/slave.jar
+
+wget http://172.31.84.44:8080/jnlpJars/slave.jar
+
+ls -l ( see the permission. slave.jar file has no execute permission)
+
+chown ubuntu:ubuntu  slave.jar
+
+chmod u+x slave.jar
+
+
+Create a folder workspace where jenkins will execute the job
+
+pwd ( now you are in /home/ubuntu/)
+
+mkdir workspace
+
+chmod 777 -R workspace
+
+cd workspace
+
+pwd ( now you are in /home/ubuntu/workspace)
+
+/home/ubuntu/workspace
+
+login to jenkins dashboaed
+
+Manage Jenkins - Manage Node
+
+click on node
+
+Node name - slave1
+
+select -> permanent
+
+clic on ok.
+
+Number executor - 1 ( How many thread or job you want to run concurrently in one Agent)
+
+Remote root directory - /home/ubuntu/workspace ( location of workspace where job will execute)
+
+Label - myslave
+
+Launch method - launch agent via execution of command on the controller
+
+launch command - ssh ubuntu@private IP address of slave machine
+                 ssh ubuntu@172.31.83.55 java -jar slave.jar ( location of the slave jar file in slave machine)
+				 
+
+Save the screen.
+
+After some time slave will come into running mode.
+
+Login to Jenkins Dashboard
+
+Go to Job in jenkins - click on configure
+
+select the check box "Restrict where this project can be run"
+
+select the - Myslave ( Name ofthe Label)
+
+
+
+
+
+				 
+				 
+				 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sudo -iu jenkins ( Login as a Jenkins user)
+
+ssh-keygen -t rsa 
+
+ssh root@<slave_ip> mkdir -p .ssh
+
+ssh root@54.196.21.216 mkdir -p .ssh
+
+
+cat .ssh/id_rsa.pub | ssh root@<slave_ip> 'cat >> .ssh/authorized_keys'
+
+
+
+
+
+
+
+
+
+Manage Jenkins -> Configure Global Security -> 
+
+check on "Enable Security"
+
+Under Agents 
+
+TCP port for inbound agents -> select the "Fixed" radio button
+
+port - 50000 ( default port is 50000)
+
+Add a new node to jenkins
+--------------------------
+
+manage Jenkin-> Manage Node -> New Node
+
+Node name- Agent1
+
+select the  on permanent Agent and click on ok
+
+Remote root directory - /tmp/test
+
+# of execution - 2 ( No. of parellel job can run agent at same time)
+
+Label - Unix
+
+Launch method - Launch agent by connecting it to the master
+
+click on save to add the agent
+
+
+click on Agent1
+under  "Run from agent command line"
+
+click on agent.jar
+
+upload the agent.jar file using filezila  into ec2 machine. create a directory called "agent" and keep the file agent.jar in the agent flder
+
+Go to Agent folder and run the below command
+
+java -jar agent.jar -jnlpUrl http://3.95.169.174:8080/computer/Agent1/slave-agent.jnlp -secret 7b4b77c0907f56519d1ca1b4edc4e36442b3ddbe804a35a1049fab3fb06d66f4 -workDir "/tmp/test"
+
+Now click on Node you should see Agent1 is connected.
+
+
+see the Build Executor status in the screen
+
+you will able to see master and Agent1 is present.
+
+Now open a new Job  and create a pipeline job
+
+you write the below script to run the agent1 node
+
+node ( 'name of the label given to Agent, here node label is "unix")
+
+node('unix') {
+   sh 'ls'
+   sh 'pwd'
+   sh 'mkdir abc'
+   }
+
+after job finish , please see the console output. you will able tto see job is running on Agent1
+
+
+
+

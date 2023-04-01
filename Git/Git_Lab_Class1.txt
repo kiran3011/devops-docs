@@ -1,0 +1,484 @@
+Git Understanding
+------------------
+
+Version Controlling
+=================
+
+
+
+Client - Server Model 
+
+1. automatic merge
+2. maintaining customer release code base.
+
+SVN is having a central repository where everyone try to get the code.
+
+More than one developer store their code into one server. 
+
+when different user are working on different file , no issue to commit. But when more than one user are working on same file like pom.xml , then we will get a merging conflict.
+
+
+
+
+1. Repository - The place where we develop the code is called Repository.
+
+2. you have one server which have one repository. other developer get the code from repository and submit the code to repository.( this is old version control process. this  is called as client server Architecture. it has auto merge , put the client code etc but all code store in client server)
+3. The above process is used by SVN , ClearCase , or TFS  etc.
+
+4. in Git , You have a copy of repository on every machine wherever developer has access to it. This is a distributed system. here anything can act as a server and anything can act as a client. But as a best practice , we choose one machine , which we use as server.
+
+5. Git is a distributed system where it can have repository anywhere.
+6. There is no chance of failure. if one server failed , we can use another machine as a server. But in earlier SVN  , if server crash , all developer are not able to access the repository.
+
+7. You clone the code , now you became a server now. Because whenever you are cloning the repository , you are getting all the code.
+
+8. We have a copy of repository on every location . this a Distributed system.
+
+9. Anything can act as a server and anything can act as a client. But for our convenience we choose on as a server. If any repository failes , other node work as a server. So failure not going to impact.
+
+10. When you  clone the repository , we will get all the code base.
+
+
+Official website of git - https://git-scm.com/downloads
+
+official websiteof Github - https://github.com/
+
+
+Git - A Git repository is basically a Git-managed project in local capabilities. Git with managing that code efficiently,with managing the history and also with tracking changes.
+
+Github - GitHub with being able to host the code on a Cloud service and to enable that great collaboration capabilities.
+
+But these are two different tools, two different services,perfectly working and perfectly used together by millions of developers in the world.
+
+Create a Repository in Github with Readme Initialize
+======================================================
+
+open the github account
+create a respository git hub
+
+Initialize the Readme file
+Create a new file in github repo
+
+Go to D drive and open git bash and 
+
+git version
+
+Configure user name and email Globally
+
+ git config --global user.email "awsdevops009@gmail.com"
+ git config --global user.name "pradeep"
+ 
+ git config --global --list
+
+do the clone
+git clone < url>
+
+git clone https://github.com/awsdevops009/First_Repo_20th_Jan.git
+
+cd MyFirstProject
+
+mkdir src
+mkdir docs
+
+start . ( to see folder in windows)
+
+git status
+
+git will track only files not the folder
+
+touch docs/Readme.txt
+
+git status
+
+touch docs/User.txt
+
+git add docs/ ( it will add all the new file created in docs folder)
+
+git commit -m "added docs"
+
+git status
+
+Then edit the Readme.txt file inside docs folder  using  git bash
+
+and create another file Readme.txt in src folder
+
+touch src/Readme.txt 
+
+git status
+
+git add docs/Readme.txt
+
+git status
+
+git add src/
+
+git status
+
+
+ git config --global user.email "awsdevops009@gmail.com"
+ git config --global user.name "pradeep"
+  
+git commit -m "added Readme to respository"
+
+git status
+
+git log ( it will display all the commit details. with commit id and who is author)
+
+git add -u ( add only modified files)
+
+
+git push origin master
+ 
+ Enter username - 
+ password
+ Now verify the all new  file in github
+
+
+
+git pull and git push
+----------------------
+
+git pull -> Allows developer to sync with remote repository.
+git push -> Developer pushes his local changes or commits into remote repository
+
+ 
+ go to the https://github.com/awsdevops009/MyFirstProject.git
+ 
+  
+ edit the robots.txt in the github directly and added one line of code and update the commit comments and 
+ click on the "commit changes"  button
+ 
+ Here we are in the local respository and we made changes in the remote repository.
+ 
+ In order to sync those changes in local repository , we need to execute git pull command
+ 
+ git pull origin master
+ 
+ origin - is the name of the remote repository
+ 
+ Always do a git pull command before doing any git push.
+ 
+ Now verify the robots.txt file in the local repository, newly added line should be present there.
+ 
+ git push command
+ -----------------
+ 
+ whenever you do a changes in the local repository and you need to push to remote repository , you need to use git push command.
+ 
+ Now edit the robots.txt line and add a new line in the local repository.
+ 
+ git status ( you will able to see the modifiction)
+ 
+ git add robots.txt ( no changes has been added to staging area)
+ 
+ git status
+ 
+ git commit -m " File modified to push command"
+ 
+ git push origin master
+ 
+ Enter username - 
+ password
+ Now verify the robots.txt file in github
+ 
+
+=======================================================================
+
+Create a Repo in Github repository without initializing any file
+
+Create a Repo - second_june06th  in github without initialize
+
+
+echo "# Earth2" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/awsdevops009/Earth2.git
+git push -u origin main
+
+
+echo "# second_june06th" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/awsdevops009/second_june06th.git
+git push -u origin master
+
+===================================================================================
+
+
+Go to the git bash D drive
+
+mkdir gitrepos
+cd gitrepos
+
+ls
+
+mkdir Earth
+cd Earth
+
+git init  ( It should create a .git repository. it should maintain all the version and all the history)
+
+ls -la
+
+mkdir jupitar
+
+mkdir mars
+
+mkdir pluto
+
+touch saturn{1..10}.py
+
+touch jupitar/test1.txt
+
+touch mars/test2.txt
+
+touch pluto/test3.txt
+
+git status
+
+git add .  ( Now files moved to stagging Area)
+
+git config --global user.name “pradeep” ( To configure Name)
+git config --global user. email  “awsdevops009@gmail.com” ( To configure email)
+   
+git commit -m " New files commited"
+
+git status
+
+
+Login to GitHub
+
+create a repository with same name "Earth"
+
+create the repository
+
+Run the command which you are getting in the github ( Run the command for existing repository)
+
+git remote add origin https://github.com/awsdevops009/Earth.git
+git branch -M master
+git push -u origin master
+
+Enter the username and password
+
+Go to the gitbash windows
+
+add some line to saturn1.py  file
+
+git status
+git add saturn1.py
+git commit -m "New line added"
+
+git push origin main
+
+git log
+
+git log --oneline
+
+git show <commit id>
+
+then modify the same saturn1.py file
+
+git status
+
+git add .
+
+git commit -m " new name added"
+
+git push origin main
+
+git log --oneline
+git show <commit id>
+
+Add one file in github
+Then commit the file
+
+git pull
+
+Revert the File
+================
+
+If you want to revert the  new file to previou  file
+
+we need to checkout the previous commit.
+
+You need to checkout the file with  commit id
+git checkout <commit Id> -- saturn1.py
+git checkout 16876fa -- saturn1.py  ( Now you will get previous file)
+
+
+
+
+
+
+
+====================================================================
+open the Github.com
+
+1.click on "New Repository" and enter name "Git_Nov1"
+2. choose public - open sorce code and anybody can see the code.
+3. select "Initialize this repository with a README"  checkbox
+3. click on "create Repository"
+4. Now go to "D:\DevOps_Training\Git" folder and open the git bash
+5. git clone https://github.com/awsdevops009/Git_Nov2.git  ( it download your repository from github to your local repository)
+7. Go to the folder and you will able to see Git_nov2 repository should present. ( you will able to see .git hidden folder present in the directory)
+9. Go to Git_nov2 folder and create 2 folder "Src" and "Doc"
+10. Now open the Read me txt file and add some text to the file.
+11. git status ( i am able to see some modification happens in the files but i am not able to see newly created folder information . Note: Git only identify folder has some changes , if that folder contain any files. only empty folder git not able to commit to github )
+12. create one files in the src folder 
+13 git status ( Now you will able to see only "Src" folder got modified.) Now all are present in workspace.
+
+14. Git has 3 parts. 1. < staging Area> , 2. <Local Repository > or working Tree , 3. Server or Remote Repository
+15. it has 3 phase commit. 
+
+16. whenever we are doing git status now after adding any fies to workspace area , it is showing there is a difference between your  workspace and staging area.
+17. git add . ( it will commit all the changes files and folder) Now it will submit to from workspace to staging Area. Now all changes is present in staging area.
+
+18. git commit -m "This is first commit" ( it will not allow you to commit because your username and email id is not configured)
+19. git config --global user.name “pradeep” ( To configure Name)
+20.git config --global user. email  “pradeep@yahoo.com” ( To configure email)
+
+21. git tag version (To specify the version in git)
+22.  git commit -m "This is first commit" ( -m stands for message)
+
+23. Now file committed to Local repository. Now we have to Login to GitHub.com to push the file.
+24. git status ( Now files are commited from staging area to Local repository)
+25. git log ( you will able to see the difference)
+26. git push ( Now i am pushing the code from git local repository to Remote repository or server)
+27. Enter Username for 'https://github.com':  awsdevops009
+          password
+
+1. git add ( adding the code to stagging Area)
+2. git commit ( Adding the code from stagging Area to Local Repository)
+3. git push ( Adding code from Local Repository to Remote Repository or server)		  
+		  
+
+Login to Ubuntu machine
+1. apt-get update
+2. apt-get install git -y
+3. git clone https://github.com/dashpradeep99/Git_Nov2.git
+4. Now to the Git_Nov2 repository
+5. git log
+6. create a folder "java" and create one file "First.java"
+7. now goto parent folder and git status ( you will able to see the java folder)
+8. git add .
+ git status
+9. git commit -m "java file added" ( we need to configure username and email)
+10.  
+   git config --global user.name “pradeep” ( To configure Name)
+   git config --global user. email  “pradeep@yahoo.com” ( To configure email)
+
+
+11. git log
+12. git push
+
+git log --oneline
+
+13. you are working in another machine  and you need updated code from GIT. just to git pull   
+14. git pull   
+   
+   
+   
+   
+
+Setup a new Git Repository in D drive 
+----------------------
+create a new  folder in D drive -> /d/DevOps_Training/Git/Git_project
+
+1. git init ( git init is a one-time command you use during the initial setup of a new repo. Executing this command will create a new .git subdirectory in your current working directory. This will also create a new master branch.)
+
+git --version
+
+Saving changes to the repository: git add and git commit
+2. echo "test content for git tutorial" >> CommitTest.txt
+3. git status ( it will show untracked files)
+4.git add CommitTest.txt 
+5. git status ( Changes to be committed:)
+6. git commit -m "added CommitTest.txt to the repo"
+   git status
+7. git add --all
+8. ls -la ( it will display .git hidden directory)   
+
+Now it is time to push all your data to github.
+
+Now create a same repository in Github and click on create ( Don't initialize the Readme file)
+
+You will get some step , please execute those step in the git bash
+after git push , please verify the github. all the latest files should present.
+
+
+
+Automatic Merge Failed
+-----------------------
+
+User 1 working in Test1.txt file . add , commit and push
+
+user 2 working on Test1.txt file without pulling the latested code.
+
+when user2 add and commit the Test1.txt file .
+
+git push ( rejected , file cannot be pushed. do a pull first , then push)
+
+Then user2 did a pull command , it will show auto merge failed.
+
+manually he need modify the code and commit.
+
+Verify the github and code should present.
+
+git log
+every commit has commit id.
+
+Rename a existing file
+-----------------------
+
+git mv Test1.txt  Test2.txt
+
+git status
+
+git commit -m "File Renamed"
+
+git push
+
+Delete the file
+---------------
+rm -f readme.txt
+git status
+git add .
+
+git commit -m "File deleted"
+
+git add -A
+git push
+
+
+---------------
+
+Create a Repo - second_june06th  in github without initialize
+
+
+echo "# second_june06th" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/awsdevops009/second_june06th.git
+git push -u origin master
+
+
+Reverting Changes
+--------------------
+
+undo uncommited changes
+git checkout -- . ( to revert back all the files)
+git checkout -- abc.txt  ( to revert back abc.txt  files)
+
+2. Undo commited changes
+
+git logs ( to get the committed id)
+git revert <commit id>
+
+3. Resetting changes
+git reset --hard <commit id >
+
+
+

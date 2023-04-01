@@ -1,0 +1,235 @@
+Install Docker in Ubuntu Machine
+=================================
+
+Create a Ubuntu machine and login to the system using putty.
+
+sudo apt-get update
+
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+	
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+ echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+docker --version
+docker version
+
+systemctl status docker
+
+exit from the root user
+
+whoami
+
+docker images ( you will get error permission denied because you are running as a ubuntu user)
+
+so , we need to add the docker group
+
+sudo cat /etc/group
+  
+sudo usermod -aG docker ubuntu
+
+id ubuntu
+
+Logout from the ubuntu ( else the command will not work unless you open a new terminal)
+
+Login again to the ubuntu system
+
+docker images ( Now you will able to see the docker command working)
+
+docker run hello-world
+
+
+Dockerfile
+----------
+
+mkdir widget
+cd widget
+
+vi Dockerfile
+
+
+FROM httpd:2.4
+RUN apt update -y && apt upgrade -y && apt autoremove -y && apt clean && rm -rf /var/lib/apt/lists*
+
+Save the file
+
+docker build -t widgetfactory:0.1 .
+
+export showLayers='{{ range .RootFS.Layers }}{{ println . }}{{end}}'   ( Set variables to examine the image's size and layers)
+export showSize='{{ .Size }}'
+
+docker images
+
+docker inspect -f "$showSize" widgetfactory:0.1  ( Show the widgetfactory image's size in byte)
+
+docker inspect -f "$showLayers" widgetfactory:0.1  ( Show the no. of layers)
+
+docker inspect -f "$showLayers" httpd:2.4   ( docker inspect -f "$showLayers" httpd:2.4 )
+
+
+Load the Website into the Container
+
+vi Dockerfile
+
+RUN rm -f /usr/local/apache2/htdocs/index.html    ( Remove the Apache welcome page from the image by adding)
+
+save the file
+
+docker build -t widgetfactory:0.2 .  ( Build version 0.2 of the widgetfactory image)
+
+docker images
+
+docker inspect -f "$showSize" widgetfactory:0.1   ( Show the widgetfactory:0.1 image's size)
+
+docker inspect -f "$showSize" widgetfactory:0.2    ( Show the widgetfactory:0.1 image's size )
+
+docker run --rm -it widgetfactory:0.2 bash    (check the htdocs folder for widgetfactory:0.2. Are the website files in the folder?:)
+
+ls htdocs
+
+exit  (Exit the container:)
+
+docker inspect -f "$showLayers" widgetfactory:0.1   (Show the layers for the widgetfactory:0.1 image)
+
+
+docker inspect -f "$showLayers" widgetfactory:0.2   (Show the layers for the widgetfactory:0.2 image and compare the two)
+
+mkdir web
+cd web
+
+vi index.html
+
+<html>
+<h1> Welcome to widget factory </j1>
+</html>
+
+save the file
+
+cd ..
+
+
+
+vi Dockerfile  ( Open the existing Dockerfile)
+
+WORKDIR /usr/local/apache2/htdocs   (Add the website data to the container by adding )
+COPY ./web .
+
+save the file
+
+docker build -t widgetfactory:0.3 .  ( Build version 0.3 of the widgetfactory image)
+
+docker images  ( Inspect versions 0.2 and 0.3 to see the differences in size and layers)
+
+docker inspect -f "$showSize" widgetfactory:0.2 ( Show the widgetfactory:0.2 image's size)
+
+docker inspect -f "$showSize" widgetfactory:0.3 ( Show the widgetfactory:0.3 image's size)
+
+docker run --rm -it widgetfactory:0.3 bash  ( check the htdocs folder for widgetfactory:0.3 . now we are inside /usr/local/apache2/htdocs folder because we have changed the WORKDIR to -> WORKDIR /usr/local/apache2/htdocs )
+
+ls -l
+
+Exit ( exit from the container)
+
+
+Run a Container from the Image
+------------------------------
+
+docker run --name web1 -p 80:80 widgetfactory:0.3  ( Run a container from the widgetfactory:0.3 image. What commmand does it use to run  	
+                                                     server? Remember to publish the web server port:)
+													 
+
+open the Public IP of the Ec2 instance :80  in the browser  (http://3.82.60.203/:80)
+
+CTRL+C
+
+docker ps -a
+
+docker start web1  (Start the container)
+
+docker ps -a
+
+
+docker exec -it web1 bash  ( Using docker exec connect to the web1 container)
+
+ls -l  (View the website files in the container)
+
+exit
+
+wget localhost  ( here localhost is public IP address of Ec2 instance)
+
+ls -l 
+
+diff index.html web/index.html  ( you will not see any output if both index.html files are same)
+
+
+
+Create a image from container (using docker commit)
+---------------------------------
+
+docker run --name u1 -it ubuntu  ( Now you are inside the ubuntu container)
+
+install all these software inside the container
+
+apt-get update
+
+apt-get install git
+
+apt-get install maven
+
+apt-get install openjdk-8-jdk
+
+mvn --version
+git --version
+java --version
+
+Now this ubuntu container contain all the these software git , maven and java 
+
+exit from the container ( exit)
+
+
+docker commit u1  u2_new_image  ( we are creating a new image from the u1 container)
+
+Now u2_new_image contain all the software
+
+Now we creating a images from the container
+
+docker images ( Now you will able to see a new image created called u2_new_image)
+
+docker run --name k1 -it u2_new_image
+
+Now we can see all the software
+
+git --version
+
+mvn --version
+
+java --version
+
+
+
+
+
+
+
+													 
+
+
+
+
+
+
+
+
+
+
+

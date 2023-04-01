@@ -1,0 +1,455 @@
+Git Understanding
+------------------
+
+VCS( Version Control system)
+-----------------------------
+Git is a Version Control system (VCS) or Source Control Management(SCM)
+
+SCM/VCS is a collaboration platform for developer ( To store your document and artifactory in different different version)
+
+- Repository : Git helps us to create repositories. Here data is stored and managed in a organized order.
+- Version:  Different version of same artifact can be stored. 
+- Artifact: Helps to manage changes in artifact. Git allows to do a undo in current changes in Artifact.Git also allows restrotion of previous steps of Artifact.
+- Comparison: Enables comparison of different version of same artifact. 
+- Collaboration: Promotes Collaboration among Developer
+- Accountability: Maintains Accountability. Git allows us to track all users  an exact changes that they have made.
+
+BackGround of Git
+-----------------
+
+- Git was born on 2005.
+- Linus Torvalds was the creater of Git.
+- Linus Torvalds Create Git to meet the needs of Linux project.
+
+Git Repository
+---------------
+
+- A respository is where we store the files and their versions.
+- It has a few layers.
+
+Layers in a repository
+-----------------------
+
+1. Files in your system
+2. Files added to next commit ( STAGING AREA) -> add command
+3. Files commmited to Local Repository -> Commit command
+4. Files pushed to cloud or remote repository (GitHub)  > push command
+
+
+
+Git Lifecycle
+------------
+
+1.working directory <- pull the code from github(private) or bitbucket server
+ or clone the existing code to your local repository.
+ 
+2. you created some files ( files present in the unstagging Area/working directory)
+3.  git add . ( pushing the newly created file to stagging Area)
+4.  git commit ( pushing the file from stagging area to local repository)
+5. git push - ( pushing the commited file from local repository to remote repository)
+6. whie pushing you need provide your userid and password
+
+
+
+
+
+What is GitHub
+---------------
+Web Based -> It is a Git Repository with a web Interface.
+Origin -> GitHub was born on 2008
+Subscription -> GitHub has both free and paid plan
+User -> Need to create user account
+Largest Host -> It is arguably the largest hosted Git repository. It has around 12 million user account. and over 31 million repository.
+
+Open an account in GitHub.  -> https://github.com
+
+click on pricing , to see the different pricing structure.
+
+You can see all the source code in the repository.
+
+using git clone command , you can copy the repositories to your local computer.
+
+What is Fork
+-------------
+- Creating a project from another existing project
+- Encourages project advancement & collaboration
+- Encourages outside contribution
+- Forks can be updated
+
+
+search for "github sample java project" in the google
+
+click on "fork" symbol. Now this project will fork to your own github account.
+
+fork created a copy of the project in your own github account.
+
+Cloning a GitHub repository (Lab)
+---------------------------------
+To clone a remote , simply create the BitBucket project before initializing a repository locally.
+
+copy the repositoryfrom the github and go to the D  drive and
+
+git clone <bit bucket url>  ( This will bring in all the commits and files from the Git project cloned)
+
+git clone https://github.com/awsdevops009/sample-java-project.git
+
+
+Git Understanding
+=================
+Git uses three section on the local machine.
+
+- Working directory or workspace
+- Stagging Area
+- Loacl Repository
+
+- Working directory is the folder where the developer create all the code. The files created in the folder are initially called as "Untracked files"
+
+- Stagging Area is the intermediate buffer zone into which files move from the working directory. These files are called stagged files.
+
+- Local repository is where version controlling happens and all the files from stagging area move into local repository. These files are called 
+  as commited files 
+
+
+3 Main States of artifact ( How Git works)
+--------------------------
+
+Modified : Here , the artifact goes through changes made by the user
+
+Staged: Here , the User/developer adds the artifact to Git index or staging Area.
+
+Committed: Here , the artifact gets safely stored 
+
+As per Git flow, Artifact sequentially moves from modified to stage and subsequentially to commited stage based on the command execute.
+
+working Directory -----> Staging Area ---> Repository directory(.git) ->  Remote Repository ( Git Hub)
+
+working Directory -> 
+
+Staging Area -> Also called index , this is where all releated changes are built up.
+
+Committ Area - This is where your committed files stored. This is where all artifact are stacked safely in Git Databse. .git directory where it store in the commited artifact and metadata for the project.
+
+
+Configuring and Initializing a Repository
+-----------------------------------------
+
+- initializing turns a folder on your local machine into a git repository
+- The git init commands creates a .git folder within the current directory
+- The .git folder contains everything you need to track changes to files
+
+Lab session
+------------
+
+Go to Git folder , open the git bash
+
+create a folder MyProject
+cd 	
+
+touch sample{1..10}.txt
+
+git status
+
+git init ( installing Git is called initializing, we do with git init command)
+
+ls -a ( it will display current folder , parent folder and .git folder)
+
+ll -a .git/
+
+if you delete the .git folder , now this folder is not git folder any more)
+
+git status
+
+git config --global user.name "pradeep.dash"
+git config --global user.email "awsdevops009@gmail.com"
+
+git config --global --list
+
+git add  filename
+
+git add sample1.txt 
+git add sample1.txt sample2.txt sample3.txt
+
+git add . ( To add all the file from the current directory to stagging area)
+
+git status
+
+git rm --cached sample1.txt ( Revert the file from stagging Area to working directory)
+
+git reset sample2.txt ( this command also will help to revert back to working directory from stagging Area)
+
+ls ( you will able to see the file)
+
+git commit -m "First commit" 
+
+
+Tracking Files
+--------------
+
+- In order for Git to start looking for changes to files , we have to add them to the Git repository
+- This allows Git to then track the changes made to those files over time
+
+git status
+
+
+Tracking and Staging Files
+--------------------------
+
+- Files are untracked when first created so that we don't track unnecessary files
+- To start tracking , we use the git add commands
+- git add is short for "stages all files and changes to the current folder"
+- To add a file's changes to the staging Area , we also use git add
+
+Revert back the file from stagging Area to Local Working Directory
+=================================================================
+
+create a file called demofile.txt , demofile1.txt
+git add demofile.txt demofile1.txt
+git status
+git rm --cached demofile.txt ( Revert the file from stagging Area to working directory)
+
+git status
+
+git reset demofile1.txt ( this command also will help to revert back to working directory)
+
+ls ( you will able to see the file)
+
+
+
+Viewing changes
+----------------
+
+- We have learned how to views the names of changed files - git status
+- How do we view the exact changes we made since last commit
+- The git diff command allows us to do this
+
+delete one line and add one more line in new_file.txt
+
+vi sample3.txt
+
+delete one line and add one new lines and save and exit
+
+git status
+
+git diff --staged ( comparing the files in staging area and Local repo)
+
+git diff ( to see the unstages changes "-" symbol shows remove the lines and "+" symbol shows added new lines
+
+git add sample3.txt
+
+git diff ( you see no changes)
+
+git diff --staged
+
+Commit your changes
+--------------------
+
+git status
+
+git commit ( add your commit message in the editor)
+git commit -v (git commit to show the current diff in the message template)
+
+git show <commit id>
+
+git show HEAD
+git HEAD~2
+
+git reflog ( it will display how git pointer is present)
+
+Type a message inside that file , save and quit the editor
+
+if you don't want to add your message in the editor , you can pass the message in command line.
+
+git commit  -m "File added"
+
+git commit -a ( add the message in the editor  and save the file)
+
+git commit -am "Adding new file"  ( if it is a existing file modified , then you can add and commit in one command . add+commit)
+
+
+commiting changes
+-----------------
+
+- git commit begins the commit process
+- This open the text editor specified by your git config or the EDITOR environment variable
+- Default commit message template contains the output of the git status
+- pass -v to git commit to show the current diff in the message template
+- pass -a to git commit to add all changes and commit simultaneously
+- use git commit -m "My commit message" if you don't want to use an editor
+
+
+Setup git ignores files
+----------------------
+
+This is a special hidden configuration file which is used to store all the private files info. Any files whose name is mentioned in .gitignore 
+cannot be accessed by git.
+
+if you want some files to be ignore , you can add these files extension to .gitignore file
+
+- ignore files allow you to tell git what files never to track
+- Ignore files are made up of patterns that match the names of files to ignore
+- Useful for ignoring build and runtime artifacts , for e.g binary files or log files
+- Git ignore files called .gitignore contained in the repository
+
+Create a example.log file
+git status ( it will display the example.log file)
+
+vi .gitignore
+
+*.log inside the files . save and quit
+
+git status ( it will ignore all the modification  files with extension .log)
+
+
+Project History using git Log
+------------------------------
+
+- The git log commands shows a list of commits in reverse chronological order
+- This will shows the hash of the commit , author , commit message and date on which it was made
+- Can be used to understand what has changed in the repository at a glance
+
+git log ( press q to come out)
+
+git log oneline
+
+git log -2 ( to see 2 more recent commits)
+
+git log -p ( to see recent changes made to the files)
+
+git log --pretty=oneline
+git log --pretty=fuller
+
+git log --since "2 months"  ( use d key to see more message)
+
+git log --until "2 months"
+
+git log --graph ( to show the log in a graph-style output)
+
+
+Undoing Mistakes
+-----------------
+- sometimes , we need to correct errors in commits
+- Either by editing the message or by modifying its content
+- We can also completely undo a commit or commits
+
+create a ReadMe.txt file
+git add ReadMe.txt 
+
+git commit --amend
+
+git log -p ( to see the patch modified)
+git log  ( take the commit id and do the revert)
+git revert <commit id> ( It will revert from Local repo and deleted the file from working directory)
+
+
+Git Setup on Windows (Lab)
+--------------------------
+
+Download git bash from https://git-scm.com/downloads
+
+Then open the gitbash in the d drive .
+
+increase the screen size by pressing -> Ctrl + "+" button 
+
+git clone https://github.com/awsdevops009/sample-java-project.git
+
+create a file called demofile in the directory 
+
+git add demofile ( now it added to the staging area)
+
+git status 
+
+git rm --cached demofile ( To revert back the file to working directory)
+
+git status    
+
+Commit the changes
+------------------
+
+git add demofile
+
+git commit -m "File added"
+
+git Status -> It tells us the status of the working directory and staging area.
+git log -> displays committed snapshots or commit history
+git log --follow abc.txt
+
+create 2 new files in the directory
+Test1 and Test2 file
+
+git status -s
+
+now add one file using git add 
+
+git add Test1
+
+git status -s ( see the difference)
+
+git commit -m "one file commited"
+
+git status -s ( it will show only Test2 file is untracked)
+
+Then modify the Test1 files
+
+ git status -s ( it will show only Test1 file is modified)
+
+ git add Test1
+ 
+git status -s ( it will show only Test1 file is modified with different colour means files added to staging area)
+
+git commit -m "second time  file commited"
+
+git status -s
+
+mv Test1  Test3 ( rename the file Test1 to Test3)
+
+git status -s ( you will able to delete file and untracked file)
+
+Commit History
+---------------
+
+Create a new file Test4
+
+git log
+
+git log --oneline
+
+git log Test1
+
+git log since .. until
+
+git log <one commitid> .. <another comitt id>
+
+git log 234567 .. 567890 --oneline ( to see the log details of one commit id to another commit id)
+
+git log --oneline
+
+git log -n 3 --oneline ( To see the last 3 log details of commit id)
+
+git log --oneline
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+echo "# git_easy_start" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/awsdevops009/git_easy_start.git
+git push -u origin master
+
+
+echo "# My_Repo" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/awsdevops009/My_Repo.git
+git push -u origin master

@@ -1,0 +1,596 @@
+Git Branching startegies
+-------------------------
+
+This is used for performing a fastforward merge . All the commit coming from the branch will be added at the top of the commit history.
+This is generally used when the code coming from a branch contains the latest version and in this code on which we will later perform a build operation then.
+ 
+we can use rebase.
+
+
+
+Rebase Example
+ ==============
+ 
+ Go to gitbash
+ 
+ mkdir rebase
+ cd rebase
+ 
+ git init
+ 
+ touch f1
+ git add .
+ git commit -m " a file added"
+ 
+ touch f2
+ git add .
+ git commit -m " b file added"
+ 
+ git log --online  ( now heah is pointing to b commit as it is a latest commit)
+ 
+ ls 
+ 
+ git checkout -b test  ( Now you are in test branch)
+
+ git log --online 
+ 
+  touch f3
+ git add .
+ git commit -m " c file added"
+ 
+ touch f4
+ git add .
+ git commit -m " d file added"
+ 
+  git log --online ( a->b->c->d)
+  
+  git checkout master
+  
+  git log --oneline ( only two commit)
+  
+  ls  ( you will able to see 2 file)
+  
+  git checkout test
+  ls ( you will able to see 4 files)
+  
+   git checkout master
+   
+ touch f5
+ git add .
+ git commit -m " e file added"
+ 
+ 
+   touch f6
+ git add .
+ git commit -m " f file added"
+ 
+ git log --oneline  ( commit will be in this order a->b->e->f)
+ 
+ git checkout test
+ 
+ git rebase master
+ 
+ git checkout master
+ 
+ git merge test
+ 
+git log --oneline ( Now commit history a->b->e->f->c->d)
+
+
+if you do a rebase , you might loose all the previous history. you may not able to see all the history in sprint2.1 from sprint2. thats why some company prefer to do merge instead rebase.
+
+
+Branch Lab ( Git- GitHub)- ( Usecase-2)
+-----------
+
+ go to  gitbash command prompt create a repository - website
+
+cd website
+git init
+ 
+Then create a index.html file in git bash
+
+git add index.html
+git commit -m "index.html added"
+
+
+
+
+git branch
+
+git branch bugfix
+
+git branch new_feature
+
+git branch
+
+ls  ( you will able to see index.html  file
+
+git checkout bugfix
+
+git branch
+ls
+
+git checkout new_feature
+
+git branch
+ls
+
+git checkout bugfix
+
+Vi index.html
+
+Modify zip code number and save the file
+
+git add index.html
+git commit -m "Index file updated"
+
+ git commit -am "Index file modified with correct zipcode"  ( Both add and commit will happen one time)
+ 
+git checkout new_feature
+
+git merge bugfix
+
+
+vi service.html
+save the files
+
+git add .
+git commit -m " New file added"
+
+
+git checkout master ( You need to go to master then merge the new_feature branch)
+git merge new_feature
+
+Recurssive Merge
+-----------------
+
+git checkout new_feature
+
+git branch new_feature2
+git checkout new_feature2
+
+ls  ( you will able to see all the file. all code base will copy to the new branch)
+
+git reflog
+
+Fastword merge - if your master is on the same point. it didn't move at all. This is called Fastword merge. You will not get new commit id. It will use the same commit id. because your head pointer is in same point.
+
+Recurssive Merge - if your master is on the move. it did move . This is called Recurssive merge. You will  get new commit id. It will create commit id. because your head pointer is moving .
+
+
+vi service.html
+
+Modify one line and save the file
+
+git add service.html
+git commit -m " service file modify"
+
+git checkout master
+
+vi index.html
+Modify one line and save the file
+
+git add index.html
+git commit -m " index file modify" ( Now we modify in the master braches)
+
+git merge new_feature2 ( you will there is a recurssive merge )
+
+git reflog
+
+
+git remote -v  ( It will display any repository attached to to the gitHub
+
+
+git push origin master
+
+username -> awsdevops009
+password -
+
+create branch in GitHub
+--------------------------
+
+Go to Github
+Create a new repo named - website-new
+don’t initialize any file
+
+Go to git bash
+
+git remote add origin https://github.com/awsdevops009/website-test.git
+git branch -M main
+git push -u origin main
+
+git remote -v ( It will display any repository attached to to the gitHub
+
+
+Now go to the GitHub and refresh the page ( You will able to see only master branch in the gitHub)
+
+How to get all the branch in the GitHub 
+----------------------------------------
+git push origin bugfix ( Now bugfix will present in GitHub)
+
+git push --all
+
+Now go to the GitHub and refresh the page ( You will able to see all  branches in the gitHub)
+
+Go to git bash
+
+git branch ( It will show all the local branch)
+git branch -a   ( it will show all the local and remote branch)
+
+Go to Github and create a branch called "branch_demo"
+
+Now go to gitbash
+
+git branch -a ( You cannot see the new branch_demoin local because it is created in GitHub Remote)
+
+git pull ( It will pull all new branch from GitHub)
+git branch -a
+
+
+git checkout master
+
+Pull Command
+-----------
+Go to GitHub and be in master branch
+
+Now go to the GitHub  and create a file hello.html
+
+Go to git bash
+
+git pull  ( now hello.html is prsent in the master branch in the working directory)
+
+
+Fetch command
+-------------
+
+Now go to the GitHub  and modify the file hello.html
+
+Go to git bash
+
+git fetch ( The hello.html will fetch to the local repository but not to the working directory)
+
+cat hello.html ( you will not see latest changes made by github)
+
+git merge ( Now all the changes from the Local repository  come to working directory)
+
+cat hello.html
+
+pull -> Fetch+merge ( First fetch the file to local repository and merge the file to working directory)
+
+Merging Conflict
+=================
+
+git checkout master
+
+create a new file and add below line
+
+vi service.txt
+
+We do research and development for the sumsung company
+
+save the file
+
+git add .
+git commit -m " file added"
+
+Create Two Branch.
+
+git branch training
+
+git branch consulting
+
+git checkout training
+
+add below line in service.txt file after existing line
+
+vi service.txt
+we do training for the sumsung company
+
+git add .
+git commit -m " file added for training branch"
+
+git checkout consulting
+
+add below line in service.txt file after existing line
+
+vi service.txt
+we do consulting for the sumsung company
+
+git add .
+git commit -m " file added for consulting branch"
+
+
+
+git checkout master
+
+git merge training
+
+cat service.txt
+
+git merge consulting  ( Now we will get merge conflict. Git doesn't understand which file to keep)
+
+Here we need to do manual merge 
+
+Here Auto merge is not going to work. we have two types of auto merge ( Fast Fastword and Recurssive)
+
+Creating a Branch on Github
+ ---------------------------
+ click on the branch dropdown and enter "simple-branch" and click on enter
+ 
+ Login to git bash
+ 
+ git pull ( It will pull all the new branchs added in github)
+ 
+ git branch -a ( To see all local and remote branch)
+ 
+ git checkout simple-branch
+ 
+
+
+Delete a branch
+----------------
+To delete a branch which is already merged
+-------------------------------------------
+
+git branch -d new_feature2 ( It will delete the branch from local. not from git hub)- then use small "d" to delete the branch
+( delete fully merged branch)
+
+git branch -D dummy ( delete from local)(delete branch even if not merged for capital D)
+ git push origin :new_feature ( new_feature branch will delete from gitHub as well)
+
+
+
+====================================================
+
+
+ 
+ Usecase - 3
+ =============
+ 
+ Login to GitHub
+
+create a repository with same name "school" and initialize a Readme file 
+
+create the repository
+
+
+Run the command which you are getting in the github ( Run the command for existing repository)
+
+git remote add origin https://github.com/awsdevops009/school.git
+git branch -M main
+git push -u origin main
+
+Enter the username and password
+ 
+ create a index.html file in master branch
+ 
+ git branch dev
+ git branch
+ 
+ git checkout dev
+ git branch
+ 
+ git push origin dev  ( push the dev branch into github repository )
+ 
+ Go to gitHub and see the branch 
+ 
+ git checkout master
+ 
+ git checkout -b feature_branch
+ 
+ touch test.html
+ git add .
+ git commit -m "File added"
+ 
+ git checkout dev
+ git branch
+ 
+ git merge feature_branch
+ 
+ git push origin dev
+ 
+ git checkout master
+ git merge dev
+ 
+ git push origin master
+ 
+ Go to github and see the branch present 
+ 
+ Create a branch in Github
+ 
+ Go to git bash and execute below command
+ 
+ git pull ( yu will able to see all the branch)
+ 
+ Go to git bash and execute below command
+ 
+ git branch -h
+ 
+ git branch -d feature_branch
+ git branch
+ 
+ git log
+ 
+ git checkout -b new_feature
+ 
+ ls
+ 
+ cp index.html  index2.html
+ modify index.html
+ 
+ git add .
+ git commit -m" Index.html modified"
+ 
+ git checkout dev
+ git rebase new_feature
+ git log
+ 
+ git checkout master
+ 
+ git checkout -b test1
+ 
+ cp test.html test2.html
+ 
+ git add .
+ 
+ git commit -m "Fiile test2 added"
+ 
+ git checkout master
+ 
+ git checkout -b test2
+ 
+ vi test.html
+ 
+ modify the file and save
+  git add .
+ git commit -m" test.html modified"
+ 
+ git checkout  test1
+ 
+ git merge test2
+ 
+ 
+git checkout dev
+ git rebase test1
+ 
+ git log
+ 
+ git checkout master
+ 
+ git rebase dev
+ 
+ git log
+ 
+  git checkout dev
+ git push origin dev
+ 
+ git checkout master
+ 
+ git push origin master
+ 
+ Go to the gitHub
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ UseCase - 4( Branch)
+ =======================
+ 
+ 
+Go to the git bash D drive
+
+mkdir gitrepos
+cd gitrepos
+
+ls
+
+mkdir Earth
+cd Earth
+
+git init  ( It should create a .git repository. it should maintain all the version and all the history)
+
+ls -la
+
+mkdir jupitar
+
+mkdir mars
+
+mkdir pluto
+
+touch saturn{1..10}.py
+
+touch jupitar/test1.txt
+
+touch mars/test2.txt
+
+touch pluto/test3.txt
+
+git status
+
+git add .  ( Now files moved to stagging Area)
+
+git config --global user.name “pradeep” ( To configure Name)
+git config --global user. email  “awsdevops009@gmail.com” ( To configure email)
+   
+git commit -m " New files commited"
+
+git status
+
+
+Login to GitHub
+
+create a repository with same name "Earth"
+
+create the repository
+
+Run the command which you are getting in the github ( Run the command for existing repository)
+
+git remote add origin https://github.com/awsdevops009/Earth.git
+git branch -M main
+git push -u origin main
+
+Enter the username and password
+ 
+ 
+ 
+ Now you are in the master braches
+ 
+ git branch -c sprint1
+ 
+ git branch -a
+ 
+ git checkout sprint1
+ 
+ ls
+ 
+ git mv saturn6.py saturn11.py
+ 
+ touch jupiter{1..4}.java
+ 
+ ls
+ 
+ git add   .
+ 
+ git commit -m "jupiter changes"
+ 
+ git push origin sprint1
+ 
+ Now go to  the gitHub and see the new branch should present.
+ 
+ create a sprint2 branch in Github
+ 
+ Go to git bash
+ git pull ( Now new branch has pulled to gitbash)
+ 
+ git checkout sprint2
+ 
+ touch sun earth venus mercury
+ 
+ ls
+ 
+ git add .
+ 
+ git commit -m  " file added"
+ 
+ git push origin sprint2
+ 
+ git branch -a
+ 
+ git switch sprint1
+ 
+ git switch main
+ 
+ git merge sprint1
+ 
+ git push --all origin
+ 
+ 
+ 
+ 
+
+

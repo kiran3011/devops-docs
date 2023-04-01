@@ -1,0 +1,133 @@
+Docker USeCase Scenario
+=======================
+
+Install docker community Edition on Ubuntu Machine
+===================================================
+
+sudo -i
+whoami
+
+apt remove docker docker-engine docker.io containerd runc  (Remove Any Existing Versions of Docker)
+
+apt-get update -y
+
+
+ensure the prerequisites are installed by running the following commands
+
+apt install -y apt-transport-https ca-certificates curl
+apt install -y gnupg-agent software-properties-common
+
+
+Install the GPG key provided by Docker:
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+
+
+Verify that you’ve installed the key with the fingerprint of:
+
+If a key is returned from that command, then the correct key was installed and you can proceed.
+
+apt-key fingerprint 0EBFCD88
+
+add the repository with this command:
+
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+
+Update your local packages index:
+apt update
+
+Install the Docker Engine and its associated packages:
+
+apt install -y docker-ce docker-ce-cli containerd.io
+
+docker version
+
+docker --version
+
+
+Docker Understanding
+-------------------
+
+Docker didn't invent containers, but it made containers easier to work with.
+
+Container -> A containers is a standard unit of software that can run a particular application and its associated process. A container is portable and contains the software dependencies for a given application.
+
+It is common to run several container at once on a single host machine.
+
+
+Base Images and Layering
+------------------------
+
+- A base image is a tiny, but functional operating system.
+- Docker uses a layered filesysttem so that you can add to a base image
+- Changes made to the base image are actually stored in a new layer and do not alter the host image.
+
+
+docker run -dit debian ( it will pull from docker hub)
+
+docker images
+
+docker ps
+
+
+
+mkdir test
+cd test
+
+vi Dockerfile
+
+FROM debian:stable
+LABEL author="kiran3011"
+
+RUN apt update && \ 
+        apt install -y nano && \
+        apt clean
+
+CMD ["/bin/bash"]
+
+
+docker build -t dashpradeep/mydebian_image1:v1 . 
+
+--------------------------------------------------------------
+
+Creating a Nginx dockerfile
+
+mkdir nginx-test
+cd nginx-test
+
+vi Dockerfile
+
+FROM debian:buster-slim
+LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
+
+ENV NGINX_VERSION   1.17.2
+ENV NJS_VERSION     0.3.3
+ENV PKG_RELEASE     1~buster
+
+RUN apt-get update \
+    && apt-get install -y nginx \
+    && apt-get clean
+
+RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
+
+COPY index.html /var/www/html/
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+
+
+vi index.html
+
+<html>
+<h1> Hi from inside the container! </h1>
+</html>
+
+
+docker build -t kiran3011/nginxtest_image1:v1 . 
+
+
+docker run --name mynginx2 -p 80:80 -d kiran3011/nginxtest_image1:v1 
+
+
+ 

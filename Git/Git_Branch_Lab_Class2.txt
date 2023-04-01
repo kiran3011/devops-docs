@@ -1,0 +1,317 @@
+Git Branching startegies
+-------------------------
+
+Before describe the Branch , first we will see how workflow works in GIT.
+
+WorkFlow
+------------
+
+- Initially , we have no commits and nothing added to our local repository
+- Then we add some files ( using git add command to the stagging area)
+- Then we commit them ( using git commit)
+- Somewhere inside the .git folder  , the commit gets stored ( along with the diffs and what files were modified , by whom , etc ...)
+
+- The commit is stored in the .git folder , inside a file
+
+The file has
+
+- The commit ID
+- What files are referenced
+- who made the commit
+- when the commit was made and more
+
+
+A New Commit
+-------------
+
+- If we make changes , and add them and add commit them , we don't get new files
+- The new commit is also added to the same file
+- so now the file that stored the original commit now reference two different commits ( and all their details)
+
+- When we make our first commit , it get stored ( for e.g C0)
+- Then next commit stored below C0 is what we call C1
+- Then C2 , C3 etc
+- This is called branch. one file has different commit .
+
+C3 is a child of C2 , which is the child of C1. etc
+
+All of these is what is called a branch. so branch is just a bunch of commits.
+
+C0 ->C1 ->C2 -> C3
+
+----------------------
+A git branch represents an independent line of development.
+
+- Branching is much more light
+- Branching is very fast (merging and creating branch is very fast)
+
+We normally create a branch when we want to develop a new feature or do a bug fix  unstable code is never committed to main or production code base .
+
+A new branch get it's own working directory, index or staging Area and commit history.
+
+Branching in Git
+-----------------
+
+- Branch is a pointer to a commit
+
+- Default branch is master
+  - points to latest commit
+  - Moves forward with every commit
+
+- Use Branches for
+  - Features
+  - Bugs
+  
+For  one product , if you have different client then for each client we have separate code release , then we need to create different different release  branch.
+
+creating a copy of the code is called branching.
+we are managing the braching for maintaing the code smoothly.
+
+Scenario: we have 2 module where the requirement is different for the project. 1st module1 requirement should not display to module2 and vice versa.
+
+For every module we will maintain a Branch.  For module1 we create a branch from master branch and module2 we will create a another branch. These branchs are called as feature branchs.
+
+All every module braches have separate release branches. for every module they have small releases.
+
+Branching startegies varies from one project to other project.( Agile project , iteretive project)
+
+Let see for one product we have 3 areas of develement. each developer is working on each area.  At the end we will merge all the area and we deliver to the client as once product.
+
+1. tracking Order
+2. mobile app
+3. performance improvements
+
+we will create many copies of same code. A team will work on each copies and will try to fix the issues.
+
+so we will create virtual copies and developer will work on each copies and at the end we will merge the all the copies and create the final code.
+
+When we are creating branches , one developer of int branach cannot see the other developer's dev branches. all branches are independent of each other.
+
+
+
+This is a feature of git which enables us to create separate branches and create the code related to different functionalities separately on these 
+branches. The default branch of git is called master.
+
+Later the code from various branches can be merged with the master branch. This helps us in creating code in uncluttered way.
+
+git branch  ( To see all the list of local branch)
+
+git branch  -a  ( To see the list of all branches ( local and remote branch)
+
+git checkout branch_name  ( To move into a branch)
+
+git branch demobranch ( To create a branch)
+
+git branch  -a 
+
+though we have create the branch but it is not active.
+
+git checkout demobranch ( To move into a branch)
+
+git checkout -b branch_name ( To create a branch and also move into it)
+
+git merge branch_name ( To merge a branch_name)
+
+git branch -d  branch_name ( To delete the branch that has been merged. this is also called soft delete)
+
+git branch -D branch_name( To delete the branch that has not been merged. this is also called hard delete)
+
+
+
+ UseCase - 1 ( Branching Lab session)
+ =============================
+ 
+git branch
+
+git branch test
+
+git branch
+
+git checkout test
+
+git log --oneline ( You can see all the commit history of the master branch)
+
+touch doc1.txt
+
+git status
+
+git add . ( file added to test branch )
+
+git commit -m " commit the file"
+
+git checkout master ( Now branch changed to master)
+
+ls ( you cannot see  doc1.txt file because file is already commited in test branach)
+
+git branch ( you are in master branch)
+touch doc2.txt
+
+git status
+
+git add . ( file added to test branch )
+
+git commit -m " commit the file"  ( I have commited to master branch)
+
+
+git checkout test
+
+ls ( we will not  able to see the doc2.txt in test branch)
+
+git branch
+git checkout master
+
+git branch -m test dev  ( Now test branch will rename to dev branach)
+
+git branch
+
+git branch -d dev
+
+git branch -a
+
+Branch Merge
+==============
+
+git checkout master
+
+git branch newtest
+
+git checkout newtest
+
+git log --oneline
+
+touch file2.txt
+git add file2.txt
+
+git commit -m " File2.txt commited"
+
+git checkout master
+
+ls ( you will not able to see the file2.txt in the master branch)
+
+git checkout newtest
+
+ls  ( you will able to see the file2.txt in the newtest branch)
+
+git checkout master
+
+git merge newtest ( Now file from newtest branch will  merge to master branch)
+
+ls ( you will able to see the file2.txt in the master branch)
+
+
+Notes:
+-----
+
+Whenever a branch is created whatever is the commit history of the master branch till that point will be copied into the newly created branch.
+
+Irrecpective of on which branch a file is created or modified git only considers the branch from where it is commited and that file belongs to the branch
+where the committ happened.
+
+mkdir merge
+cd merge
+
+git init
+
+touch f1
+
+git status
+
+git add .
+git commit -m "a"
+
+touch f2
+git add .
+git commit -m "b"
+
+git log 
+
+git checkout -b test
+git branch
+
+git log --oneline
+
+touch f3
+git add .
+git commit -m "c"
+
+touch f4
+git add .
+git commit -m "d"
+
+git log --oneline ( Test branch commit is d->c ->b->a)
+
+git log --oneline --decorate
+git checkout master
+
+git log --oneline (master branch commit is ->b->a)
+
+touch f5
+git add .
+git commit -m "e"
+
+touch f6
+git add .
+git commit -m "f"
+
+git log --oneline  ( master branch commit is f>e>->b->a)
+
+git merge test
+
+git log --oneline  ( master branch commit is f>e>->d->c->b->a)
+
+ 
+Note: Merging is done based on the time stamp of the commit. 
+ 
+ 
+
+Project on Branching & merging
+===============================
+
+Happy Path / Fast Forward Merge
+
+Go to D drive and Git folder
+/d/DevOps_Training/Git/GitDemo
+
+git clone https://github.com/awsdevops009/starter-web.git
+
+cd starter-web/
+
+git branch  ( Now you are in master branch)
+
+git branch -a
+
+git checkout -b title-change ( It will create the branch and checkout. Now you are in title-change branch)
+
+git status
+
+vi simple.html   ( Modify the tile )
+
+save the file
+
+git status
+
+git commit -am "Chnage the title"
+
+ git log --oneline
+ 
+ git checkout master
+ 
+ git diff master title-change
+ 
+ git difftool master title-change ( To see the code in visual editor)
+ 
+  git merge title-change  ( It will show Fast Forward merge)
+  
+  git log --oneline --graph --decorate ( HEAD is pointing to current Branch title-change and master)
+  
+  git push origin master
+  
+   git branch
+   
+    git branch -d title-change
+
+ git log --oneline --graph --decorate ( Now only show HEAD pointing to master)
+
+
+ 
+ 

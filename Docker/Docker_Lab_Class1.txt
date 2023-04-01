@@ -1,0 +1,536 @@
+Docker
+-----
+
+Container
+----------
+
+- Container adoption is rapidly growing.
+- Gartner predicts that by 2023 , > 70% of Organization will run > 2 containerized apps in production.
+- Containers are an industry-changing revolution.
+
+We Isolate Services
+===================
+
+We isolate our service like tomcat , Apache , nginx or MYSql or any kind of service that we run on the operating system. we don't put all the service in single server , we use multiple server to run these services of high availability. 
+
+- To host our apps we need infrastructure.
+- We use VM's/Cloud Computing to setup Infra
+- We isolate our service in OS of VM
+- Because of Isolation we endup setting up multiple VM's / Instances
+- VM's/Instances will be overprovisioned
+- Results in High CapEx and OpEx
+
+
+VM's are Expensive
+------------------
+
+- Every VM has OS
+- OS need Licensing
+- OS takes time to boot
+- VM's are portable but Bulky
+- VM needs Resources for its OS ( OS need RAMs , CPU , network , diskspace
+
+
+Imagine Multiple Services running in same OS but isolated
+
+
+In the past:
+Bare metal: no virtualization
+Virtual machine: virtualized hardware; isolated OS, libraries, applications
+Containers:
+Operating system-level virtualization
+Isolated libraries and applications
+
+Compared to deploying on bare metal which doesn't use virtualization at all, or through virtual machines which virtualize at the hardware level, containers are quicker and simpler to deploy while using fewer resources. They also maintain an isolated user space that lets us work with different operating systems, packages, libraries, and services.
+
+
+Containers
+============
+
+Containers are isolated execution environments that  quickly and efficiently deploy exact copies of our desired environments. This is done by virtualizing at the operating system-level and isolating any libraries and applications within the container.
+
+
+- A process Isolated
+- A directory namespace or cgroup
+- Necessary bin/lib in the Directory
+- A directory with IP address to connect
+
+Containers share the machine's OS system kernel and therefore do not require an OS per application.
+
+A container is a Standard unit of software that packages up
+ - code
+ - Dependency
+
+
+
+Container Use Cases
+===================
+
+While speed and portability are certainly impressive, the real benefits of containers shine once we consider how they can be used.
+
+Containers On Their Own
+Without adding any special functionality, container platforms (like Docker) can help us solve an age-old technological problem: the one where it "works on my machine" but not anywhere else. If an application is containerized, then an image of the very containers used in production can be supplied to developers and administrators to launch on their own workstations. This way it works on all machines.
+
+Similarly, when migrating applications or services, it may be beneficial to containerize the existing infrastructure first. That way, should we need to redeploy or migrate again in the future, we can simply redeploy the container instead of having to set up the entire environment. Even in instances where configuration management is used, deploy times might be sped up by switching to a container-based architecture.
+
+Containers can also affect how we architect our applications. Instead of monolithic applications that store all services as part of one framework, we can instead use microservices to isolate each individual parts of an application. When paired with orchestration, this can be especially powerful.
+
+Containers with Orchestration and Monitoring
+That said, rarely do we use containers in a vacuum. Most often, containers are used alongside an orchestration platform. Docker, specifically, tends to be paired with Kubernetes or Docker Swarm. Once paired with orchestration (and generally some kind of monitoring to report changes) a container platform can enhance our reliability and response times to issues and outages.
+
+This means we can watch for the CPU load on our containers, and when a certain limit is reached, automatically deploy or remove containers as needed to match the changes in load. This allows for an elastic architecture.
+
+Similarly, we can monitor for problems and then automatically terminate and replace any failing containers, creating a self-healing architecture. Even in instances where the container's build itself is failing, containers have their benefits. For example, it can often be quicker to remove and replace a number of containers than it is to redeploy to virtual machines.
+
+Containers for Deployments
+Containers also fit nicely into the concept of continuous delivery and continuous integration as a whole, the DevOps idea of deploying often and automatically based on changes made to some master repository. This means when we make changes to an application and push those changes to its production branch, a continuous integration platform will generate a new container image build, test the build, and deploy that build (assuming it passed all tests) by removing all old containers and replacing them with the new version.
+ 
+ 
+
+Ubuntu: https://docs.docker.com/install/linux/docker-ce/ubuntu/
+
+Why use Docker
+--------------
+
+Docker makes it really easy to install and run software without worrying about setup or dependencies.
+
+sudo su
+
+apt-get remove  wget
+
+Install redis from the below URL
+
+https://redis.io/download
+
+wget https://download.redis.io/releases/redis-6.2.6.tar.gz
+ 
+If you want to install redis using docker
+
+docker pull redis
+docker run -it redis
+
+container is a isolated place for execution of the the application which you are trying to deploy.
+
+Create a Ubuntu machine
+Login to putty as as -> ubuntu
+
+1. apt-get update
+2. sudo apt-get install docker.io ( install docker)
+
+3.apt-get install docker.io --fix-missing ( need to use this command sometime if docker will not install in the system)
+
+4. docker --version
+
+  docker version
+  
+5.sudo groupadd docker  (Add the Docker group)
+
+6. sudo gpasswd -a $USER docker (Add ourselves to the group)
+service docker status
+
+7. sudo service docker restart (Restart the Docker daemon)
+
+8. docker --version (Check that Docker works without sudo)
+
+ docker run hello-world
+ 
+ 
+ To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+ 
+9. docker run busybox echo hello world  (busybox is typically used in embedded systems (phones, routers...) We ran a single process and echo'ed hello world
+
+docker images
+
+docker run busybox ls ( These folder is contain inside the busybox container)
+
+
+10. docker run -it ubuntu bash (Pulling from library/ubuntu , This is a brand new container , It runs a bare-bones, no-frills ubuntu system)
+
+11. Now you are inside a container. Run below command inside the container.
+
+13.	dpkg -l | wc –l (Let's check how many packages are installed here. dpkg -l lists the packages installed in our container and wc -l counts them)
+14.	apt-get update ( download update from internet)
+15.	apt-get install curl (We want curl, so let's install it)
+16.	curl ifconfig.me/ip  ( it will display the public IP address of the Ec2 system)
+17.	exit (Our container is now in a stopped state.)
+
+18.	docker run jpetazzo/clock (We will run a small custom container. This container just displays the time every second. This container will run forever. To stop it, press ^C.). Docker has automatically downloaded the image jpetazzo/clock. This image is a user image, created by jpetazzo
+
+19.	docker run -d jpetazzo/clock (Containers can be started in the background, with the -d flag (daemon mode):, We don't see the output of the container. But don't worry: Docker collects that output and logs it! Docker gives us the ID of the container
+
+20.	docker ps (List running container.How can we check that our container is still running? , With docker ps, just like the UNIX ps command, lists running processes. The (truncated) ID of our container. The image used to start the container. That our container has been running (Up) for a couple of minutes. Other information (COMMAND, PORTS, NAMES) that we will explain later.
+
+
+Two useful flags for docker ps
+
+21.	docker  ps -l(To see only the last container that was started, To see only the ID of containers)
+22.	docker  ps -q (Combine those flags to see only the container ID of the last container started! )
+
+ee21eb9b1227
+
+docker inspect container-id
+
+View the logs of a container
+
+23.	docker logs 47d6 ( 47d6 We specified a prefix of the full container ID , You can, of course, specify the full ID , The logs command will output the entire logs of the container)
+
+View only the tail of the logs
+
+24.	docker logs --tail 3 47d6 (View only the tail of the logs, To avoid being spammed with eleventy pages of output, we can use the --tail option: The parameter is the number of lines that we want to see.
+
+Follow the logs in real time
+
+25.	docker logs --tail  1 --follow  47d6 (Just like with the standard UNIX command tail -f, we can follow the logs of our container: , This will display the last line in the log file. Then, it will continue to display the logs in real time. Use ^C to exit.
+
+Stop our container
+
+docker stop
+docker kill
+
+26.	docker kill 47d6 (Stop our container -> There are two ways we can terminate our detached container. Killing it using the docker kill command. Stopping it using the docker stop command. The first one stops the container immediately, by using the KILL signal. 
+
+The second one is more graceful. It sends a TERM signal, and after 10 seconds, if the container has not stopped, it sends KILL. Reminder: the KILL signal cannot be intercepted, and will forcibly terminate the container. Docker will echo the ID of the container we've just stopped.
+
+27.	docker ps (Let's check that our container doesn't show up anymore)
+
+List stopped containers
+
+28.	docker ps –a (List stopped containers. We can also see stopped containers, with the -a (--all) option.)
+
+What is an image?
+
+Image is a single file with all the dependencies and config required to run a program.
+
+29.	Understanding Docker Images (An image is a collection of files + some meta data. (Technically: those files form the root filesystem of a container.). Images are made of layers, conceptually stacked on top of each other. Each layer can add, change, and remove files. Images can share layers to optimize disk usage, transfer times, and memory use.
+Differences between containers and images
+
+30.	Differences between containers and images • An image is a read-only filesystem. • A container is an encapsulated set of processes running in a read-write copy of that filesystem. • To optimize container boot time, copy-on-write is used instead of regular copy. • docker run starts a container from a given image.
+
+Object-oriented programming
+
+31.	Object-oriented programming • Images are conceptually similar to classes. • Layers are conceptually similar to inheritance. • Containers are conceptually similar to instances.
+32.	If an image is read-only, how do we change it? • We don't. • We create a new container from that image. • Then we make changes to that container. • When we are satisfied with those changes, we transform them into a new layer. • A new image is created by stacking the new layer on top of the old image.
+33.	There are multiple ways to create new images. • docker commit: creates a new layer (and a new image) from a container. • docker build: performs a repeatable build sequence. • docker import: loads a tarball into Docker, as a standalone base layer. We will explain commit and build in later chapters. import can be used for various hacks, but its main purpose is to bootstrap the creation of base images.
+
+
+
+Docker Lab
+-------------
+
+
+Advantage of using Docker
+
+1) Application that runs on docker require lesser size.
+
+2) Better utilization cpu.
+
+3) Short boot-up process.
+
+4) Docker can be integrated with other tools.
+
+docker images
+
+docker rmi <imageID> or <imageName> ( To remove the docker image)
+
+docker ps ( To see running container)
+docker ps -a ( To see all the container )
+
+docker rmi hello-world -f ( forcefully delete the image)
+docker rm ( to remove everything)
+
+
+https://get.docker.com/
+
+spin off ubuntu machine
+
+apt-get update
+apt-get install curl 
+curl -fsSL https://get.docker.com -o get-docker.sh
+
+ls ( you should have  get-docker.sh file present)
+
+sh get-docker.sh
+
+service docker status
+
+service docker start
+
+docker run -> docker create + docker start
+
+
+
+open the docker hub and click on "explore"
+
+docker run -d -p 80:80 nginx:latest
+
+<public ip>:80
+
+docker ps -a
+
+docker start container id
+
+docker stop container id
+
+docker exec container id ls /
+docker exec container id pwd
+
+docker exec -it container id /bin/bash ( -it means interactive terminal in bash). now you are inside the container
+
+uname -r
+
+service nginx status
+
+exit
+
+docker logs container id
+
+docker inspect container id
+
+docker run -d -p 8080:80 nginx
+
+docker run --rm -d -p 1234:80 nginx
+docker ps
+start http://localhost:1234
+
+docker ps
+docker stop <container ID>
+
+
+
+To run the Nodejs application
+----------------------------
+
+docker run --rm -it node bash ( To run the node js container)
+node --version
+
+echo "console.log('hello world');" > app.js
+cat app.js
+node app.js
+ls
+
+exit ( exit from the container)
+
+
+
+Docker image Creation
+----------------------
+
+we want to create a image for our apllication , that process is called contarization or dockerization.
+
+
+Name of the file is -> Dockerfile
+
+Dockerfile
+plain-text
+Sample format
+Instruction to build image
+
+Not required any programming language
+
+
+
+Sample Dockerfile
+-------------------
+
+FROM ubuntu:latest
+MAINTAINER Pradeep Dash "awsdevops009@gmail.com"
+                                                     
+RUN apt-get update
+CMD["echo", "hello-world"]
+
+
+------------------------------------------------
+
+RUN Instruction : used to run commands against our images that we are building
+
+
+
+
+
+Create a Apache Docker file
+
+mkdir myapache
+
+vi Dockerfile
+
+FROM ubuntu:14.04
+MAINTAINER Pradeep Dash "awsdevops009@gmail.com"
+                                                     
+RUN apt-get update && apt-get install apache2 -y
+CMD ping google.com
+
+
+
+
+To run the Docker file
+-----------------------
+
+docker build -t myapache:1.0 .
+
+docker images
+
+docker run -it myapache:1.0 /bin/bash
+
+ping google.com
+
+docker stop <container id>
+
+--------------------------------------------
+--------------------------------------------
+
+docker run hello-world
+
+Docker took the following step internally.
+
+1. The Docker client contacted the docker daemon.
+2. The docker daemon pulled the "hello-world" image from the Docker hub.
+3. The docker daemon created a new container from that image which runs the executable that produces the output you are currently reading.
+4. The Docker daemon streamed that output to the docker client , which sent it to the client.
+
+
+
+MAINTAINER – Who Crate and manage this container image
+
+FROM – What is the base image, we are going to use to host our container. you can either use a minimal OS image like CentOS, Alpine or you can create your own from the scratch by mentioning SCRATCH as a value to this.
+
+RUN – Commands to Run to make the image( the future container) in the way you want
+
+EXPOSE Do you want your image or application in the image to expose any port to the external world or at least to the host.  For example if you are building Apache HTTP server image you can EXPOSE port 80, In our case it is 8080
+
+CMD The Default Command of the container which gets created using this image.  Every Container must have a Default Command. the Container would run as long as the Default Command is running.
+
+ADD or COPY The files you want to copy into the container from your host.
+
+WORKDIR Define a workspace where the upcoming (or) following set of commands/instructions  should be executed in
+
+
+
+docker ps
+docker ps -a
+
+docker info 
+docker images
+
+docker run -it ubuntu bash
+
+docker run -> To run a new container
+docker ps -> To see running and stopped container
+docker images -> To see info about images
+
+Containers and Images
+---------------------
+
+images ~ Stopped Containers
+
+Containers ~ Running Images
+
+docker pull alpine
+
+docker pull ubuntu
+
+docker pull ubuntu:14.04
+
+docker images
+
+docker rmi ubuntu:14.04
+
+Containers
+------------
+
+docker start <container>
+docker stop <container>
+docker rm <container>
+
+
+docker run -it --name temp ubuntu:latest /bin/bash
+
+ps -elf
+
+top
+
+Docker Tomcat
+--------------
+
+docker run ubuntu
+docker ps
+
+docker run -t -i ubuntu /bin/bash
+
+docker ps -a
+
+docker rm <container id>
+docker images
+docker rmi <imageID>
+
+docker pull ubuntu
+
+create  a Dockerfile
+
+FROM docker/whalesay:latest
+RUN apt-get -y update && apt-get install -y fortunes
+
+docker build -t <the name you choose for your new image> .
+
+
+# How to start and stop the container 
+
+docker stop <containername/id>  # to stop the container which is running in background mode
+docker container start <containername/id> # to start the already stopped container
+
+# monitoring the Container 
+
+docker container list # list the containers created
+docker container ls -a  #to list the containers including not running containers
+docker ps    #to list the running container
+docker info #docker engine status including container running/paused/stopped containers list
+docker container stats <containername/id> #prints the CPU and MEM usage data of the container name
+docker container stats #prints the CPU and MEM usage of all running containers
+docker container top <containername/id> #executes the top command in the container specified, fails if the specified container is not running
+
+# How to remove/delete the container
+
+docker container rm <containername/id> # Remove the Container 
+
+# How to remove/delete the image
+
+docker container rmi <imagename/imageid> # Remove the image
+# How to view the logs of the running container
+
+docker container logs <containername/id> # to view the logs of the container 
+
+Dockerfile
+----------
+
+- File that contains a set of ordered commands required to leave image ready to be used
+
+Things carried in Dockerfile
+ 
+- Installing software
+- Upgrading versional of kernal
+- Adding users
+
+Difference between RUN and CMD
+------------------------------
+
+RUN command - run commands when building image
+CMD - run command when container based on generated image starts
+RUN creates a new layer whereas CMD uses writable layer of container
+
+Docker create & Start
+---------------------
+
+docker start hello-world
+docker create -a <container-id>
+
+dcker start <container-id>
+
+docker ps -all
+

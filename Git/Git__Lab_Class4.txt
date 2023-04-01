@@ -1,0 +1,463 @@
+
+
+Personal Access token (PAT)
+===========================
+
+https://docs.github.com/en/enterprise-server@3.0/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
+ Profile Icon -> settings-> Developer settings-
+ 
+ click on personal Access Token
+ 
+ Enter Token name - My-Key
+ select the repo permission
+ 
+ Then create a Token
+ 
+ Goto Git bash command line
+ 
+ Do the Global configuration
+ 
+ git config --global user.name "pradeep"
+ git config --global user.email "awsdevops009@gmail.com"
+ 
+ git config --list
+ 
+ git clone < private Repo>
+ 
+ It will ask PAT token
+ 
+ if you don't want to enter personal token everytime , you can usee the below command
+ 
+ git config --global credential.helper cache
+ 
+ 
+ 
+ 
+ Using SSH
+==============
+
+It will have two keys . one private key and public key.
+private key will remain in our system. and public key we need to keep in Github.
+
+Verify SSH key is generated or not.
+
+Go to profile -> setting -> SSH and GPG Key
+
+git clone git@github.com:awsdevops009/website-new.git ( you will get an error)
+
+
+Configure the SSHKey
+--------------------
+
+https://docs.github.com/en/enterprise-server@3.0/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+
+
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+ssh-keygen -t ed25519 -C "awsdevops009@gmail.com"
+
+press enter
+press enter
+press enter
+
+if you go to below locatin , you can verify your both key present in .ssh
+
+ls -l ~/.ssh/
+
+ ls -al ~/.ssh (to see if existing SSH keys are present)
+
+/Users/pradeep/.ssh
+
+ cat ~/.ssh/id_ed25519.pub
+
+https://docs.github.com/en/enterprise-server@3.0/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+
+ Go to Github
+Profile Icon -> settings-> SSH and GPG keys
+click on "new SSHKey"
+Title - Demo-key
+Key - pste your SSH publickey
+Click on Add SSH Key 
+
+to verify SSH key
+ssh -T git@github.com
+
+
+
+ Cherry-pick 
+----------------
+
+This is a feature of git which enables us to selectively pick only few commits and add them to the master branch.
+
+The developer might have created lots of commits on the branch but in the end he feels there are only few commits where working
+version of the code is present and only these commits have to be added to master . Then we can use cherry picking command.
+
+
+Go to Git bash
+
+mkdir cheey-pick
+cd cheey-pick
+
+git init
+
+ touch f1
+ git add .
+ git commit -m " a file added"
+ 
+ touch f2
+ git add .
+ git commit -m " b file added"
+ 
+ git log --online  ( now heah is pointing to b commit as it is a latest commit)
+ 
+ ls 
+ 
+ git checkout -b  dev
+ 
+ touch f3
+ git add .
+ git commit -m " c file added"
+ 
+ touch f4
+ git add .
+ git commit -m " d file added"
+
+  touch f5
+ git add .
+ git commit -m " d file added"
+ 
+  touch f6
+ git add .
+ git commit -m " d file added"
+ 
+  git log --online
+  
+  Select the proper commit and  Developer want to add to master.   the "c" commit and "d" commit into the master branch
+  
+  git checkout master
+  
+  git cherry-pick   <commit id1>  <commit id2>
+  git cherry-pick b4e9da3 47b3827
+
+  git log --oneline ( Now you will able to see  a , b , c and d commit)
+   
+ 
+ Git Clone from Github
+ =======================
+ 
+ This will download all the content of the remote gitHub server into the local machine of the developer irrespective of whatever that code 
+ is already present or not.
+ 
+ git clone remote_gitbub_url
+ 
+ Go to Github and take the copy of the code
+ 
+ Login to gitbash and execute below command
+ 
+ git clone https://github.com/awsdevops009/Earth.git
+ 
+ 
+ Git Fetch
+ ==========
+ 
+ This will work only when there is modification in the data in the content of the local repository is different from the remote repository
+ then we can use git fetch. This will download the modified data and place it on a remote branch. We can go to the remote branch , check if the modification
+ are acceptable , if it is , then we can merge them with master branch.
+ 
+ 
+ Go to the github
+ modify the existing file in Github
+ 
+ Go to gitbash
+ git fetch  ( modified file stored in remote branch)
+ 
+ git branch -a
+ 
+ ls 
+ you cannot see the the modification
+ 
+ Go to Remote repository
+ 
+ git checkout remotes/origin/master
+ 
+ ls ( you will able to see the modified file.)
+ 
+ Now we want that modified file , we want to see in the master
+ 
+ git checkout master
+ 
+ git merge remotes/origin/master 
+ 
+ ls ( Now we will see in the modified file in master)
+ 
+ To get the latest modification , we need to do Fetch and merge
+ 
+ 
+ git pull
+ =========
+ 
+ This will work when there is a difference of code in local repository and remote repository. It will downlaod the modified code and automatically merge the to master.
+ 
+ Open the gitHub
+ Edit some  files and commit changes.
+ 
+ Login to gitbash
+ git pull ( It will download modified files and merge with master)
+ 
+ PUULL -> Fetch+Merge
+ 
+ Rearrange the commit using Rebase ( using Rebase -i HEAD)
+ =================================
+ 
+ 
+ Git rebase can also be used for rearranging the commit order.
+ The first commit is called as "Initial commit" and it cannot be rearranged.
+ 
+ mkdir git_practice
+ cd git_practice
+ 
+ git init
+ 
+ Create  five files one by one and do the commit.
+ 
+  touch f1
+ git add .
+ git commit -m " a file added"
+ 
+ git log --oneline  ( a->b->c->d->e)
+ 
+ git rebase -i HEAD~4  ( 4 represent the top commit. we have done 5 commit , so we maximum we can arrange 4 commit. we cannot arrange initial commit.)
+ 
+ It will open a editor
+ Now arrange the commit and save the file.  (  c-> e -> b->d)
+ 
+  git log --oneline ( check the commit history)
+  
+ 
+  Git Squash command
+  ====================
+  
+  Identify the commits that we want to merge . remove the word "pick" and replace with "squash"
+  
+  
+  git rebase -i HEAD~4
+  
+  Editor will open
+  Now write "squash" in place of "pick" and save the file.
+  
+  if you write 2 commit as squash , it will merge this two commit into another one.
+  it will merge  the commit .
+  
+  
+  git log --oneline 
+  
+  git log ( List of changes in the git history)
+  
+  
+  
+  Add multiple new commit to a existing commit
+  =============================================
+  
+  create few commit  a-->b --> c-->d (HEAD)
+  It don’t create a new commit  but add these files to the top most commit.
+  
+  touch f7 f8
+  git add .
+  
+  git commit --amend -m " b" ( Now both the new 2 commit will be added to b commit)
+  
+  Note: Amend doesn't modify commits. It only create a new commit with the same message . The older commit will be removed from the active 
+  git tree structure and it became an orphaned commit.
+  
+  git reflog ( To see all the commit history ( active and orphaned)
+  
+  ====================================
+  
+  git log --graph
+  
+  git show commitid
+  
+  
+ git  Stash command
+  =================
+  Shelve and restore incomplete changes
+  
+  Suppose you are implementing a new feature for your product. Your code is in progress and suddenly a customer escalation comes. Because of this, you have to keep aside your new feature work for a few hours. You cannot commit your partial code and also cannot throw away your changes. 
+
+So you need some temporary space, where you can store your partial changes and later on commit it.
+
+In Git, the stash operation takes your modified tracked files, stages changes, and saves them on a
+stack of unfinished changes that you can reapply at any time.
+
+
+currently i am working on the master branch. i have modified one file. Now i have to start working in another branch. to save this task in same local repository . so i have to do git stash
+
+
+git status -s
+
+Now, you want to switch branches for customer escalation, but you don’t want to commit what
+you’ve been working on yet; so you’ll stash the changes. To push a new stash onto your stack, run
+the git stash command.
+
+Now, your working directory is clean and all the changes are saved on a stack
+
+Suppose you have resolved the customer escalation and you are back on your new feature looking
+for your half-done code, just execute the git stash pop command, to remove the changes from the
+stack and place them in the current working directory.
+  
+  
+  Login to gitbash
+  
+  git checkout master
+  
+  git checkout -b cool-branch
+  
+   
+  touch abc.html
+  git add abc.html  ( Now files add to the staging Area)
+  
+  without commit these files , now we want to save this file for future.
+  
+  git stash
+  
+  git status ( we won't be able  to see the files)
+  
+ 
+  
+  git checkout master
+  
+  modify some files in master branch
+  
+  git add .
+  git commit -m " file commited"
+  
+  git branch -v
+  
+  git checkout cool-branch
+  
+  How to get the file abc.html
+  
+   git stash list
+   git stash show stash@{2}
+  git stash apply ( again i want the changes get it back in my ReadMe.txt file)
+
+  git status
+  
+  ls
+  
+cat abc.html  ( newly added line should present in the abc.html)
+
+Note: if you do more than one git stash , then we have to do git stash list and we will get the list of id and from the id we will do the git stash apply on those id. if without id , you will apply the git stash apply , then you will get last changes , not the fisrt changes
+
+git stash apply 2 (stash@{2})
+
+Now  you in the cool branch , after stash apply , you are going to get the file.
+
+git add .
+git commit -m " File added"
+
+Now you will do the 
+
+git stash list ( Again you will able to see the list of stash. )
+
+If you want to remove the stash list , you need to use pop command
+
+
+
+
+git stash pop 
+
+But if you do the  git stash pop ( it will remove the changes from git stash item  folder )
+
+if you do the git stash apply. then you will get back the changes.
+git stash list ( still you will see the item changes in stash folder.)
+
+  git stash drop (stash@{0})
+  
+  
+UseCase - ( Using Stash)
+--------------------------
+
+mkdir stash-example
+cd stash-example
+
+git clone https://github.com/awsdevops009/starter-web.git
+
+cd starter-web
+ 
+Now you are in master branch
+
+Modify the file - simple.html
+
+git add simple.html
+git status 
+
+git stash  
+
+git status ( Now you will see your branch is upto date)
+
+cat sample.html ( You will see the old simple/html file)
+
+Now Modify the ReadMe file
+
+git status 
+git add .
+
+git commit -m "Modify the Read me files"
+
+git status
+
+Now we want to complete the simple.html task
+
+git stash apply
+
+git status
+
+cat simple.html
+
+git commit -am " File modified simple.html"
+
+git status
+
+git status list
+
+git stash drop
+
+
+
+
+
+
+git reset --hard ( if you want to rollback your changes in local)
+
+
+
+Rebase
+------
+Now you are in sprint2 branch.
+Now create a new branch sprint2.1 from sprint2
+
+git checkout -b sprint2.1
+
+Now you go to sprint2 branch and modify Readme.txt file .
+
+git checkout sprint2
+
+modify Readme.txt
+
+git status
+
+git add Reamme.txt
+git commit -m "File added"
+
+git checkout sprint2.1 ( now you are in sprint2.1)
+
+git rebase sprint2 ( Now changes made to sprint2 is now available in sprint2.1 branch as well)
+
+when you want , all the earlier modification of sprint2 , should be reflected in sprint2.1
+then do a rebase of sprint2. Then all the changes should be reflected in sprint2.1
+
+if you do a rebase , you might loose all the previous history. you may not able to see all the history in sprint2.1 from sprint2. thats why some company prefer to do merge instead rebase.

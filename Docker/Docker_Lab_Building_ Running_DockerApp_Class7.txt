@@ -1,0 +1,423 @@
+Docker project
+==============
+
+UseCase - Building and Running your Docker Application
+=======================================================
+
+- Setup Environment ( Docker Installation)
+- Understand Dockerfile
+- Create a custom Application
+- Build a Custom Application Image
+- Deploy an Application Image to Docker Hub
+- Run an Application container
+- View Container Logs
+- Create a container Volume
+- Create a Bridge network
+- Run a Database container in a network
+- Run an Application container in a network
+- connect into a container ( docker exec)
+- Building and Running Multiple containers with Docker compose.
+
+
+Docker is a new, open-source container technology that makes it possible to get far more apps running on same server and also makes packaging and shipping program very easy.
+
+Benefits of Docker
+-------------------
+- Docker provides many benefits to the development /deployment workflow
+- Ship the software faster
+- Docker desktop can run on windows or Mac
+- Docker Engine can be used with Linux
+- Docker works with many framework and Languages
+- Environment Consistency
+
+Docker Images
+-------------
+- A readonly template composed of layered filesystem used to share common files and create Docker container instances.
+- Define the contents that are needed  to run a container.
+
+Dockerfile
+-----------
+
+Code  ->compile -> Binary
+
+Dockerfile -> docker build -> Docker Image -> Docker container
+
+A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image.
+
+Linux can run Docker engine. docker is based on Linux technology.
+
+https://www.docker.com/get-strated
+
+You can run your docker in windows or Mac or in Linux.
+
+docker engine is required for running the docker in Linux.
+
+Create a ubuntu ec2 instance of t2.medium 
+
+apt-get update -y
+apt-get install docker.io -y
+
+service docker status
+service docker start
+service docker status
+
+apt install docker-compose  ( Install docker-compose)
+
+docker --version
+docker version
+
+ docker-compose --version
+ docker-compose version
+
+apt-get install git
+apt-get install tree
+
+
+Verify docker get-strated
+
+docker images
+
+docker run -d -p 80:80 docker/getting-started
+
+docker images
+
+docker ps  ( You can see your get-strated container is running)
+
+Run in a chrome browser - public IP address of ec2:80
+
+3.86.184.69:80  ( Now you can docker get-strated website is running.
+
+docker stop <container id>
+docker ps -a
+docker rm <container id>
+
+docker ps -a
+
+Verify our Docker Application
+-----------------------------
+This application is contain nodejs and mongo DB. we have a server.js where our code is running. It uses express js.
+Inside our lib folder we have mongo DB is defined.
+
+Our focus will be , how to build a image and run a container. and talk between container.
+
+our docker project
+
+git clone https://github.com/awsdevops009/docker-project.git
+
+Now we are using docker-compose to run the docker image. docker-compose is a orchstration tool where multiple image can run in sametime.
+
+ls
+
+cd docker-project
+
+docker-compose build
+
+docker-compose up  ( Run the container. you can see two container , nodeapp and mongodb)
+
+docker ps
+
+Access in the browser
+
+public IP address:3000 ( you will see website is running but no data. so we need to run the data by going inside the container)
+
+http://3.86.184.69:3000/
+
+open a new terminal
+
+docker ps -a
+
+docker exec -it <nodeapp container id > sh
+
+node dbSeeder.js ( run the db command in node js  using node command. It will insert some command)
+
+ Now you will able to see database is open. press ctrl+c to stop this.
+ 
+ Open the browser 
+ 
+ public IP address:3000
+ 
+ Exit from the container
+ 
+ Go inside the docker-project  ( where your docker-compose.yml file is present)
+ 
+ docker-compose down  ( To stop the container)
+ 
+ docker rmi <image id>
+ 
+ https://hub.docker.com/_/node
+
+ Create a Application Image using Dockerfile
+ -----------------------------------------
+ 
+ Dockerfile
+ ------------
+ 
+FROM        node:alpine
+
+LABEL       author=" Docker User"
+
+ARG         PACKAGES=nano
+
+ENV         NODE_ENV=production
+ENV			PORT=3000
+
+
+WORKDIR     /var/www
+COPY        package.json package-lock.json ./
+RUN         npm install
+
+COPY        . ./
+EXPOSE      $PORT
+
+ENTRYPOINT  ["npm", "start"]
+
+
+
+Build the image
+----------------
+
+docker build -t nodeapp .
+
+docker images
+
+docker rmi ImagesID  ( to remove the images)
+
+
+ Dockerfile  ( node.dockerfile)
+ ------------
+
+vi node.dockerfile
+
+FROM        node:alpine
+
+LABEL       author=" Docker User"
+
+ARG         PACKAGES=nano
+
+ENV         NODE_ENV=production
+ENV			PORT=3000
+
+
+WORKDIR     /var/www
+COPY        package.json package-lock.json ./
+RUN         npm install
+
+COPY        . ./
+EXPOSE      $PORT
+
+ENTRYPOINT  ["npm", "start"]
+
+
+
+Build the image  from node.dockerfile
+------------------------------------
+
+
+docker build -t nodeapp -f node.dockerfile .
+
+docker images
+
+docker rmi ImagesID
+
+docker build -t kiran3011/nodeapp:1.0 -f node.dockerfile .  ( Build with docker hub userid)
+
+docker images
+
+
+Deploy an Image to Docker Hub (Docker Hub Regisery)
+----------------------------
+docker images are immutable. you cannot change the image only you create another image with another tag.
+
+docker push <user name>/<image name > : <tag>
+
+
+docker login
+username-> <Username>
+password
+
+open the below URL in the browser
+
+hub.docker.com 
+
+Username - username@gmail.com/password
+
+docker push kiran3011/nodeapp:1.0
+
+open the docker hub in browser and verify your images should present.
+
+if  any other user wants your image from docker hub ,  then user needs to pull the images from docker hub.
+
+docker pull dashpradeep/nodeapp:1.0
+
+
+ Run a Application container
+ ===========================
+
+Docker Pull
+----------
+https://hub.docker.com/_/nginx
+
+docker pull nginx:alpine
+
+docker run --help
+
+docker images
+
+docker run --name some-nginx -d -p 8080:80 nginx:alpine
+
+docker ps -a
+
+Open a browser  publicIP address of ec2:8080
+
+docker ps
+
+docker stop <container ID>
+
+docker ps -a
+
+docker rm <container ID>
+
+docker images
+
+docker rmi <ImagesID> 
+
+
+Docker view Logs
+================
+
+let see our images. pull the images if it is not their in local system
+
+docker pull kiran3011/nodeapp:1.0
+
+As in our dockerfile  expose PORT is 3000 external port. so we will run our container 3000 internal port and 3000 external port.
+
+docker run -p 3000:3000 -d  kiran3011/nodeapp:1.0
+
+docker ps -a
+
+Open a browser  publicIP address of ec2:3000 ( it is not working because docker container exited)
+
+docker logs <container ID>
+
+we can see mongo DB error 
+
+docker rm <container ID>
+
+docker run -p 3000:3000   kiran3011/nodeapp:1.0  ( if you run with -d option , you can see the log in console)
+
+
+docker volume
+-------------
+
+https://github.com/awsdevops009/docker-project/blob/main/server.js
+
+server.js  log files - /logs/access.log will store all log files inside logs folder.
+
+docker run -p 3000:3000 -v $(pwd)/logs:/var/www/logs kiran3011/nodeapp:1.0
+
+
+Docker network 
+--------------
+
+docker network ls
+
+docker network create --driver bridge isolated_network
+
+docker network ls
+
+Run the mongo Database in bridge network. if mongo DB image is not available in locally, it will download from docker hub.
+
+docker run -d --net=isolated_network --name mongodb mongo ( now mongo DB container is running)
+
+docker ps  ( now you can see mongo db container is running)
+
+
+Now mongo is running but frontend application nodeapp is not running in the isolated_network.
+
+Now Run the nodeapp image run in the same bridge network.
+
+ docker run -d --net=isolated_network --name nodeapp -p 3000:3000 -v $(pwd)/logs:/var/www/logs kiran3011/nodeapp:1.0
+
+docker ps  ( now you can see both  mongo db  and nodeapp container is running)
+
+Note: Verify db name should be mongodb as it is mentioned in the config.development.json file. whatever name is mentioned in config file , same name we have to provide the db container name.
+
+https://github.com/awsdevops009/docker-project/blob/main/config/config.development.json
+
+all database connection string mentioned here
+
+https://github.com/awsdevops009/docker-project/blob/main/lib/database.js
+
+ var connString = `mongodb://${config.host}/${config.database}`;
+ 
+ config.host is equal to "mongodb"  ( it is defined in the config.development.json)
+ config.database is equal to "funWithDocker" ( it is defined in the config.development.json)
+
+open in the browser 
+
+ public IP address:3000
+ 
+ Now we should able to see application in  the browser. but you cannot see any data. we need to connect to container and insert the data using  dbSeeder.js file)
+ 
+ Verify the Logs
+ ---------------
+ 
+ docker ps
+ 
+ docker logs < container Id of nodeapp>  ( Now you can see db connection is open)
+ 
+ docker network ls
+ 
+ docker network inspect < network id of isolated_network>
+ 
+ Now you see both db container and nodeapp container is running in same network. They can talk to eaach other.
+ 
+ 
+ Connect into the container
+ -------------------------
+ 
+ docker exec -it nodeapp sh ( Now you are inside the container)
+ 
+ ls  ( Now you can see a file dbSeeder.js
+ 
+ 
+ node dbSeeder.js  ( now connect to db and insert data)
+ 
+ ctrl+c to come out from the db connection.
+ 
+ exit  ( to come out of the container)
+ 
+ open in the browser 
+
+ public IP address:3000
+ 
+ Now we should able to see in the data in the  browser.
+ 
+ 
+ docker-compose
+ ==============
+ 
+ Instead of running different image separately in command line. just create a docker-compose.yaml file and put all the image name and network name . so all the image will run in the same bridge network.
+ 
+ https://github.com/awsdevops009/docker-project/blob/main/docker-compose.yml
+ 
+ open in the browser 
+
+ public IP address:3000
+ 
+ Open an another terminal
+ 
+ docker ps -a
+ 
+ docker-compose down
+ docker ps
+ 
+ 
+ 
+ docker-compose build
+ 
+ docker-compose up
+ 
+ 
+ 
+

@@ -1,0 +1,855 @@
+Project CI/CD Jenkins & Tools
+=============================
+
+Continuous Integration project
+
+Current Situation
+-----------------
+- Agile SDLC
+- Developer make regular code changes
+- These commits needs to be Builds and Tested
+
+Issue with current Situation
+----------------------------
+- In an Agile SDLC , there will be frequent code changes
+- Not so frequently code will be  tested
+- which accumulates bugs and error in the code.
+
+- Developer need to rework to fix these bugs and error
+- Manual Build & Release process
+- Inter Team Dependencies
+
+
+Solution
+------------
+
+- Build and Test for every commits
+- Automated process
+- Notify for every build status
+- Fix code if Bugs or Error found instantly rather than waiting.
+
+
+This project itself is called continuous Integration process. Input this process is any code commit and output will be well tested artifact. all this happen automatically. This well tested artifact can be deployed to any stagging further software testing or performance testing or Load testing.
+
+If everything is goes well it will promted to  production server.
+
+To implement this process so many tool will be implemented to complete this automated process. But it is good to implement this process looking to the demand of current situation.
+
+
+Tools will used for this project
+--------------------------------
+
+- Jenkins ( Continuous Integration Server)
+- Git ( version Control  System)
+- Maven ( Build Tool)
+- Email Integration
+- Sonarqube Server
+- Nexus SonaType ( Artifact/software Repository)
+- AWS EC2 Instance
+
+Architecture Continuous Integration Pipeline
+================================================
+
+- Developer will makes the code changes  by using his IDE like Visual studio or Intellij tool.
+- That tool or IDE connected to Local Git Repository. 
+- Developer makes the code changes and  commit .
+- These commit will sync with remote repository in Github.
+
+- As soon as the Github receive the commit , the continuous Integration server jenkins will detect that and fetch the changes latest code.
+- It will have integration with Github
+- Jenkins will be running some unit  test which is part of Build process.
+
+- If anything is failure , the Notification will be send to Developer
+- If it is passes , code analysis will be done on the code by using checkstyle and sonarqube scanner.
+- It will generate some report  and report will be published to sonarqube server.
+
+- Sonarqube server will display the results  and also have Quality Gates or Quality Criteria.
+- if it passes the Quality Criteria , it will move to next level or if it is failed  then failure notification will send to developer.
+
+- It will puts break every level , if it will automatically fails , it will be break. else process continuous to next step.
+
+- Once the code analysis is done , then it  will  build the Artifact.
+
+- Maven is used to do the Build as we are using java code
+- While sourcecode is getting build , it needs some dependencies upon Maven and these dependencies is storing on Nexus Repository
+
+-  Maven will automatically download all the dependencies from maven Repository which is in Nexus or sonatype Nexus.
+
+- Once the Artifact is package , we are going to upload it back to Nexus sonatype Repository.
+
+- Nexus we are using for two cases. one for download the dependencies from and second is uploading our Artifact or storing our Artifact
+- We can versioned and storing the latest artifact.
+
+Everytime this continuous Integration process run , we will have new version of software or artifact . Based on requirement , any version of software can be selected from Nexus Repository and can be deployed to server.
+
+
+Flow of the Execution 
+=====================
+
+- Login to aws account
+- create Security Group ( Jenkins , Nexus and Sonarqube)
+- create Ec2 Instance with User data script
+  -- Jenkins
+  -- sonarqube
+  -- Nexus
+- Jenkins Post Installation ( Install plugin as per requirement)
+- setup Nexus Repository
+- Sonarqube post installation
+- Jenkins will create multiple Job
+  - Build Job
+  - Setup Email Notification
+  - Checkstyle code Analysis Job
+  - sonarqube Integration
+  - Sonar code Analysis Job
+  - Artifact upload Job to uploaded to the Nexus Repository
+  
+ - Connect all the jobs togather with Build Pipeline
+ - Set automatic Build Trigger
+ - Test with Visual Studio IDE
+
+
+Project Lab
+===========
+clone the below repository
+
+https://github.com/awsdevops009/devops_project.git
+
+go to ci-jenkins branch
+
+sudo apt install openjdk-11-jdk -y
+yum install java-1.8.0-openjdk.x86_64 wget -y 
+sudo apt install openjdk-8-jdk -y
+sudo amazon-linux-extras install java-openjdk11
+sudo yum install java-11-openjdk-devel
+
+yum install java-11-openjdk-devel wget -y
+
+sudo apt-get install openjdk-11-jdk-headless
+
+Go to AWS console
+
+select a t2.small ubuntu machine 18.0 
+
+Run the below script in userdata section
+-----------------------------------------------
+#!/bin/bash
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+sudo apt install ca-certificates -y
+sudo apt install maven git wget unzip -y
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins -y
+-----------------------------------------------
+Launch the system
+
+Open the PublicIP:8080 in the browser
+
+Get the Initial password
+
+Login to jenkins with admin user 
+
+
+
+Install Nexus
+-------------
+
+Go to AWS console
+
+Click on AWS Market place - search for "centos'
+choose the first instance
+
+choose a t2.medium centos
+
+Enter the nexus userdata script
+
+------------------------------------------------
+#!/bin/bash
+yum install java-1.8.0-openjdk.x86_64 wget -y   
+mkdir -p /opt/nexus/   
+mkdir -p /tmp/nexus/                           
+cd /tmp/nexus
+NEXUSURL="https://download.sonatype.com/nexus/3/latest-unix.tar.gz"
+wget $NEXUSURL -O nexus.tar.gz
+EXTOUT=`tar xzvf nexus.tar.gz`
+NEXUSDIR=`echo $EXTOUT | cut -d '/' -f1`
+rm -rf /tmp/nexus/nexus.tar.gz
+rsync -avzh /tmp/nexus/ /opt/nexus/
+useradd nexus
+chown -R nexus.nexus /opt/nexus 
+cat <<EOT>> /etc/systemd/system/nexus.service
+[Unit]                                                                          
+Description=nexus service                                                       
+After=network.target                                                            
+                                                                  
+[Service]                                                                       
+Type=forking                                                                    
+LimitNOFILE=65536                                                               
+ExecStart=/opt/nexus/$NEXUSDIR/bin/nexus start                                  
+ExecStop=/opt/nexus/$NEXUSDIR/bin/nexus stop                                    
+User=nexus                                                                      
+Restart=on-abort                                                                
+                                                                  
+[Install]                                                                       
+WantedBy=multi-user.target                                                      
+EOT
+echo 'run_as_user="nexus"' > /opt/nexus/$NEXUSDIR/bin/nexus.rc
+systemctl daemon-reload
+systemctl start nexus
+systemctl enable nexus
+---------------------------------------------------------------
+
+
+
+open the PublicIP:8081 in the browser
+
+click on signin
+
+Login to nexus ec2 instance
+
+user name - centos
+
+open this below file  ( we need to copy this file path from nexus console from the browser)
+
+cat /opt/nexus/sonatype-work/nexus3/admin.password
+
+Go to nexus console
+
+username - admin
+password - copy the password from the ec2 server 
+
+click on signin
+
+New password for admin - test1234
+
+select Enable anonymous access radio button
+
+click on next
+
+click on finish
+
+We need to create 4 repository
+------------------------------
+
+
+click on "server administration and configuration" symbol in top of the screen
+
+
+1st Repository
+--------------
+
+click on Repository
+click on create repository
+
+select maven2(hosted)
+
+name - profile-release
+click on create repository
+
+2nd Repository ( It will store Maven dependecy)
+---------------
+click on Repository
+click on create repository
+
+Version policy - Release
+
+select maven2(proxy)
+
+name - profile-maven-central
+
+Version policy - Release
+
+Remote storage - 
+
+URL - https://repo1.maven.org/maven2/
+
+click on create repository
+
+
+3rd Repository 
+---------------
+
+Crate a Snapshot repository
+---------------------------
+click on Repository
+click on create repository
+
+select maven2(hosted)
+
+name - profile-snapshot
+Version Policy - Snapshot
+
+click on create repository
+
+4th Repository  ( it will group both the repository)
+-------------
+
+click on Repository
+click on create repository
+
+select maven2(group)
+
+name - profile-maven-group
+
+Version policy - Release
+
+Group
+
+Member Repository ( we need to add all the created group to this maven-group) 
+
+select "profile-maven-central" and mover under to Members
+
+select " profile-release" and mover under to Members
+
+select " profile-snapshot" and mover under to Members
+
+
+click on create repository
+
+
+
+
+
+
+Create Job in Jenkins Dashboard
+-------------------------------
+
+Go to Jenkins Dashboard
+
+Create a new Job  - Build
+Freestyle
+
+click on Ok
+
+Fetch the sourcecode from git
+
+git - https://github.com/awsdevops009/devops_project.git
+
+Branch - ci-jenkins
+
+ */ci-jenkins
+ 
+Under Build section
+
+Add Build step - Invoke top level Maven targets
+
+Goals - install -DskipTests  ( To igrnore the tests. only here it will package the artifact)
+
+click on Advance
+
+properties
+
+We need to pass below variable in the properties section. we will get this variable from settings.xml file. 
+
+SNAP-REPO=profile-snapshot
+NEXUS-USER=admin
+NEXUS-PASS=test1234
+RELEASE-REPO=profile-release
+CENTRAL-REPO=profile-maven-central
+NEXUS-GRP-REPO=profile-maven-group
+NEXUSIP=PrivateIP of nexus server ( ec2 instance 172.31.84.178)
+NEXUSPORT=8081
+
+
+settings file -> select "settings file in filesystem" from the dropdown 
+
+File Path - settings.xml  ( it is present in the root folder in the sources repository. so no need to mention the path)
+
+
+
+
+Under Post Build Actions
+
+Archive the Artifact
+
+Files to Archive -> **/*.war
+
+
+click on Save
+
+Do a Build Now
+
+see the console
+
+
+Go to the Nexus console
+
+click on browser icon on the  top of the nexus console.
+
+click on Browse section
+
+Go to Repository
+
+open the "profile-maven-central"  ( You should see the dependecy being stored over here)
+
+---------------------------------------------------
+
+Editable Email Notification on Jenkins
+----------------------------------------
+
+Login to your own gmail
+
+Turnoff multi factor authentication
+Turn off the lesssecureapps
+
+Go to google accout and 
+search for lesssecureapps
+
+make below changes
+
+Go to your google account profile
+
+security page
+
+Less secure app access
+
+Allow less secure apps: ON
+
+Logout and Login again.
+
+click on "Test configuration"
+
+click on Save
+
+Logout from gmail and Login to gmail again 
+
+
+
+
+Manage jenkins -> configure System
+
+Extended Email Notification is displaying due to plugin install.
+
+Extended Email Notification
+
+SMTP server -> smtp.gmail.com
+SMTP port - 465 ( Globally unique port)
+
+click on Advance
+
+Enter your gmail id and password
+
+check the Use SSL checkbox.
+
+Default Content Type - HTML
+
+Default Subject - Keep it default  format
+
+Default Content - Keep it default  format
+
+Enable Debug mode - check the box 
+
+click on Default Trigger
+
+Select "Always" checkbox
+
+
+
+Now  we will configure Email Notification
+
+SMTP server -> smtp.gmail.com
+
+
+click on Advance
+
+use SMTP Authentication -> check the check box
+
+user Name -> Enter the email from where you want to send the email ( awsdevops009@gmail)
+
+password -> 
+
+use SSL -> check the check box
+
+SMTP port - 465 ( Globally unique port)
+
+check "Test configurtion by sending test email" to verify
+
+Reply-To-address - awsdevops009@gmail.com
+
+click on "Test configuration by sending test e-mail"
+
+Note:
+======
+If it is getting Authentication failed ,  go to your gmail and check Allow less secure apps: ON. Logout from gmail and login again.
+
+
+Go to Jenkins Job
+------------------
+
+Go to the particular Job - Build , which you want to make a build.
+
+click on configure and choose post build action
+
+Go to post build Action
+
+choose Editable Email Notification - 
+
+Project Recipient List  - awsdevops009@gmail.com
+
+click on Advance
+
+select - always
+
+click on save
+
+Then do a build. for each failure , receipent will get an email.
+
+
+-------------------------------------------------------------------------
+
+Checkstyle code Analysis Job
+=============================
+
+Go to Jenkins Dashboard
+
+Create a new Job - Test
+free style
+
+Copy From - Build
+click ok
+
+
+all configuration will remain same
+
+Under Build
+Invoke top - level maven targets
+
+Goals - test
+
+TEST - test the compiled source code using a suitable unit testing framework. These tests should not require the code be packaged or deployed
+
+Remove the archive the artifact from the  post build section.
+
+click on save.
+
+Build this and test the result.
+
+Integrate the Test Job with Build Job
+------------------------------------
+
+Go to the Build Job
+configure
+
+Add post build action
+Build other project - 
+
+Project to Build- Test
+
+click on save.
+
+Create Integration Test Job
+----------------
+
+Go to Jenkins Dashboard
+
+Create a new Job - IntegrationTest
+free style
+
+Copy From - Test
+click ok
+
+Under Build
+Invoke top - level maven targets
+
+Goals - verify -DskipUnitTests  ( Maven verify and skip the unit test)
+
+VERIFY - run any checks on results of integration tests to ensure quality criteria are met
+
+Remove the archive the artifact from the  post build section.
+
+click on save.
+
+Build this and test the result.
+
+Integrate the IntegrationTest Job with Test Job
+------------------------------------
+
+Go to the Test Job
+configure
+
+Add post build action
+Build other project - 
+
+Project to Build- IntegrationTest
+
+click on save.
+
+
+Create Code Analysis Job
+=========================
+
+Go to Jenkins Dashboard
+
+Manage Jenkins - plugin manager
+
+search for "Checkstyle"
+
+install without restart.
+
+search for another plugin "Violations"
+
+Install without restart
+
+
+Go to jenkins Dashboard
+Create a New Item - Code Analysis
+
+Freestyle
+
+copy from - Build
+click on ok
+
+Go to Build section
+
+Invoke top-level Maven targets
+
+Goal - checkstyle:checkstyle
+
+
+Add post build Action
+
+Publish Checkstyle analysis results
+
+save this job
+
+If you Build the job , you can see console output
+
+checkstyle generate some report called "checkstyle-result.xml" under target folder
+
+Go to the workspace -> target  - you can see the report
+
+Build the job one more time.
+
+You will able to see report graph in the dashboard
+
+The Report is showing how many warning is present in the code.
+
+Go the Job - Code Analysis job
+configure
+
+Add post Build Action
+
+Select "Report Violations"
+
+checkstyle row -> 10 100 100  target/checkstyle-result.xml  ( If the code has maximum 100 violation it will allow the code build to pass. if it has more that 100 warning , code build will ustable. Unstable is not a failure but it will not allow next job to trigger. File Name -> target/checkstyle-result.xml)
+
+click on save.
+
+
+Integrate the Code Analysis Job with IntegrationTest Job
+------------------------------------
+
+Go to the IntegrationTest Job
+configure
+
+Add post build action
+Build other project - 
+
+Project to Build- Code Analysis
+
+click on save.
+
+
+
+
+------------------------------------------------
+
+Deploy the Artifact to Nexus server
+====================================
+
+Go to  manage Jenkins -> manage plugin
+
+click on "Available"
+
+search for "Nexus Artifact Uploader"
+
+Install this without restart
+
+Search for "Copy Artifact"   ( we are not going to do  build the artifact only copy the artifact)
+
+install this as well.
+
+search for "Zentimestamp"  ( this pluging is for maintaining the version in the Nexus)
+
+Go to jenkins
+
+Create a New Job
+
+Job Name - Deploy-To-NEXUS
+
+Freestyle and click ok
+
+In General section
+-------------------
+
+Select " change date pattern for the BUILD_TIMESTAMP (build timestamp) variable checkbox
+
+Date time Pattern - yy-MM-dd_HHmm
+
+Go to Build section
+
+select "Copy artifact from anoother project"
+
+project name - Build ( Bild Job Name)
+
+Artifact to copy - **/*.war
+
+
+Click on "Add Build step"
+
+select "nexus Artifact uploader"
+
+NEXUS Version - NEXUS3
+
+protocol - HTTP
+
+NEXUS URL - private_IP address of NEXUS ec2 server:8081 ( 172.31.82.225:8081)
+
+credential -  click on Add "Jenkins"
+
+Kind - username with password
+
+username - admin ( Nexus username)
+password - test1234 ( Nexus Password)
+
+ID - nexusserverlogin
+click on Add
+
+Now user the new credential - ( choose credential which you aaded recently)
+
+GrpoupID - QA
+
+Version - V$BUILD_ID
+
+Repository - profile-release ( we have created this repository earlier. On this repository we want to store the artifact)
+
+click on "Add" under "Artifact"
+
+ArtifactId - profile-$BUILD_TIMESTAMP ( Date time Pattern - yy-MM-dd_HHmm set inthe General section)
+
+
+Type - war
+
+File - target/profile-v2.war ( this is the file , whch will get uploaded to the nexus repository. The file name profile-v2 is defined in pom.xml file. artifactID and version combination)
+
+click on save
+
+Now Build the Job.
+
+Attach the IntegrationTest job to Deploy-To-NEXUS job
+===========================================
+
+Go to Build Job
+configure
+
+Post Build section
+
+Build Other project - Deploy-To-NEXUS
+
+Now Build the job.
+
+Verify Artifact stored in NEXUS Repository
+=========================================
+
+Once job got success.
+
+ Go to NEXUS repository
+ 
+ click on browser icon on the  top of the nexus console.
+
+click on Browse section
+
+Go to Repository
+
+open the "profile-release"  
+
+open the profile-release repository , you should see the latest repository stored here.
+
+
+
+Create a Pipeline for all the Job
+================================
+
+Go to  Manage Jenkins - > Manage Plugin
+
+search for " Build Pipeline"  ( To show the view)
+
+install
+
+Create View
+
+View name - Profile Continuous Integration
+
+select Build Pipeline view
+
+select Initial job - Build
+
+No. of Dispaly build - 5
+
+click on save
+
+click on Run icon on the Pipeline Dashboard
+
+
+ Go to NEXUS repository
+
+open the profile-release repository , you should see the latest repository.
+
+Setup Automatic Trigger
+=======================
+
+Go to Build Job
+
+Under Build Trigger
+
+select Poll SCM
+
+schedule - * * * * * ( Every Minute)
+
+save the Job
+
+Open your visual studio
+
+git clone https://github.com/awsdevops009/devops_project.git
+
+git status
+
+git branch
+
+git checkout ci-jenkins
+
+git branch
+
+Go to - userdata\jenkins-setup.sh
+
+make some code changes ( By adding some "#####")
+
+git status
+
+git add .
+
+git commit -m " Testing auto build"
+
+git push 
+git push origin ci-jenkins
+
+see the Git pooling login
+
+
+
+
+SNAP-REPO=profile-snapshot
+NEXUS-USER=admin
+NEXUS-PASS=test1234
+RELEASE-REPO=profile-release
+CENTRAL-REPO=profile-maven-central
+NEXUS-GRP-REPO=profile-maven-group
+NEXUSIP=PrivateIP of nexus server ( ec2 instance 172.31)
+NEXUSPORT=8081
+
+--------------------------------------
+

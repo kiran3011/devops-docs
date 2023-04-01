@@ -1,0 +1,104 @@
+UseCase -> Building a Docker Image via Dockerfile
+==================================================
+Your company's landing page needs to be Dockerized. you want to move the actual webpage to container as well.
+
+When creating Docker images for websites, applications, and any service that may require any code change in the future, it's best to build in a way that can be quickly and easily rebuilt when any changes occur.  we'll be building a Dockerfile that can generate an image of our website that will make sure that when changes happen with the website code, we won't have to change the Dockerfile itself!
+
+
+To create the Images, we are going to use the below software.
+
+- Use Alpine base image ( Linux container)
+- Nginx web server
+- Website files and Nginx configuration provided
+
+The process to create the website Dockerized
+----------------------------------------
+
+- Write the Dockerfile -> The Dockerfile should define the parent image , install nginx , then move the configuration and website files to the desired location.
+
+- Build the Image -> Build an image using the Dockerfile, tag the image with the name web
+
+- Launch the Container -> Launch a web01 container using the new image. map port 80 on the container to 80 on the host.
+
+
+
+mkdir containerhub
+Change directory to containerhub:
+
+cd containerhub
+mkdir files
+cd files
+
+vi default.conf
+
+server {
+		 listen 80 default_server;
+		 listen [::]:80 default_server;
+		 
+		 root /var/www/html/;
+		 
+}
+
+
+mkdir html
+cd html
+
+vi index.html
+
+<html>
+<h1> This is my website inside Nginx server </h1>
+</html>
+
+mkdir css
+mkdir assets
+mkdir js
+
+		 
+
+ls
+List out the information in from the files document:
+
+ls files/
+We will see our default.conf file.
+
+See where our information is stored:
+
+cat files/default.conf
+
+cd ../.. ( Go back to containerhub directory)
+cdcd  
+Create the Dockerfile inside the containerhub folder 
+
+vi Dockerfile
+Build the file based on the alpine image:
+
+FROM alpine:3.13
+RUN apk upgrade
+RUN apk add nginx
+COPY files/default.conf /etc/nginx/conf.d/default.conf
+RUN mkdir -p /var/www/html
+WORKDIR /var/www/html
+COPY --chown=nginx:nginx /files/html/ .
+EXPOSE 80
+CMD [ "nginx", "-g", "pid /tmp/nginx.pid; daemon off;" ]
+
+Save and exit the document by pressing Escape followed by :wq.
+
+Build and Test the Image
+Build the image:
+
+docker build . -t web
+Check that we have the web image:
+
+docker image ls
+Launch Docker based on the web image:
+
+docker run -dt -p 80:80 --name web01 web
+Once it is finished running, check that the website has been launched:
+
+curl localhost
+We will get the HTML for the website.
+
+access in the chrome browser.
+
+Copy the public IP address provided on the lab page, and paste it into a new browser tab. We'll know it worked correctly when the Container Hub website appears.

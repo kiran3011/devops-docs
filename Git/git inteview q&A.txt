@@ -1,0 +1,101 @@
+1. What are the advantages of using a VCS?
+          Provides flexibility
+          All the versions are easily available
+          Changes can be tracked easily
+          Provides backup
+
+2. What is the difference between Git and SVN?
+
+
+3. What is the difference between Git and Github?
+                    
+GitHub is an American company that provides hosting for software
+development version control using Git. It offers all of the distributed version
+control and source code management(SCM) functionality of Git as well as
+adding its own features.
+
+
+4. What language is used in Git?
+Git uses 'C' language. GIT is fast, and 'C' language makes this
+possible by reducing the overhead of run times associated with
+high-level languages.
+
+5. What language is used in Git?
+Git uses 'C' language. GIT is fast, and 'C' language makes this
+possible by reducing the overhead of run times associated with
+high-level languages.
+
+6. what is a distributed VCS?
+
+7. Mention various Git repository hosting functions?
+
+GitHub
+Gitlab
+Bitbucket
+SourceForge
+GitEnterprise
+
+8. what is a repository in Git?
+
+9. What is a bare repository in Git?
+
+10.What is the function of git stash apply?
+If you want to continue working where you had left your work then ‘git stash
+apply' command is used to bring back the saved changes onto your current
+working directory.
+
+11. Explain some basic Git commands.
+
+git init
+git status
+git clone <url>
+git add
+git commit
+git push origin master
+
+12.  How do you fix a broken commit?
+
+13. What is a conflict in Git?
+
+|Git can handle most on its own most merges by using its automatic merging features]
+
+ 
+14. How do you resolve a conflict in Git?
+15.How do you revert a commit that has already been pushed and made public?
+
+There can be two approaches to tackle this question and make sure that you include
+both because any of the below options can be used depending on the situation
+syntax :   git revert
+16. what is a subgit?
+SubGit is a tool for SVN to Git migration. It can create a writable git mirror of a local
+or remote Subversion repository and use both Subversion and Git as long as you like.
+17.What is the difference between Git pull and fetch?
+  git pull = git fetch + git merge
+
+18.What is staging area or index?
+
+19.git instaweb?
+
+git instaweb’ is used to automatically direct a web browser and run a
+webserver with an interface into your local repository.
+
+
+20.git is tree?
+
+git is-tree represents a tree object including the mode and the
+name of each item and the SHA-1 value of the tree.
+
+21.How to recover a deleted branch using git reflog?
+
+
+
+ 
+
+ 
+
+ 
+
+
+
+
+

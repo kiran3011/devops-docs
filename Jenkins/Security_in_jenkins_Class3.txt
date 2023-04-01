@@ -1,0 +1,571 @@
+Security in Jenkins
+===================
+security is an important concern for enterprises and for applications.
+
+So how do you make your jenkins' secure?
+
+How do you control who can access your jobs?
+
+How do you control authentication?
+
+How do you control security aspects?
+
+
+Jenkins Installation on Ubuntu
+==============================
+
+1. Jdk 11
+2. Jenkins
+3. Maven , Git
+
+Login to Ubuntu Server
+
+user - ubuntu
+
+sudo su
+apt-get update
+
+
+apt-get install git
+apt-get install tree
+
+1. Verify Installed Java Version
+
+java -version
+(Only Java8 or Java11 are recommended)
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+apt install openjdk-11-jre-headless ( Not Required to install)
+
+java -version
+
+pwd to see the current path -> /home/ubuntu
+
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64/jre
+EOL
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+4. First, add the repository key to the system
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+5. Next, append the Debian package repository address to the server’s sources.list
+
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+6. Update System packages
+
+sudo apt update
+
+7. Install Jenkins and its dependencies
+
+sudo apt -y install jenkins
+
+8. Start Jenkins using systemctl
+
+sudo systemctl start jenkins
+
+9. Get Service Status
+
+sudo systemctl status jenkins  ( if not exit , press ctrl+c)
+
+systemctl status jenkins.service
+
+10. Enable Jenkins Service
+
+sudo systemctl enable jenkins
+
+
+
+
+Take the public IP address of ec2 instance , open in a chrome browser
+
+public IP:8080
+
+
+11. Use the cat command to display the password:
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+click on select Installed jenkins
+
+Username: admin
+Password: admin
+Confirm password: admin
+Full name: Pradeep Dash
+E-mail address: awsdevops009@gmail.com
+
+
+
+Create Job
+==========
+
+Goto Jenkins
+click on create New item
+
+Item Name -> My_First_job
+
+select "Freestyle project"
+click on ok
+
+Go to Build
+Select - Execute shell
+echo " Hello , This is my first jenkins job"
+
+Build Now 
+will see the output in console output.
+
+
+
+
+Enable/Disable Login jenkins
+----------------------------
+
+ if we open up an incognito for our browser, we're going to go to open the jenkins URL <http://34.202.160.12:8080/> , and it's going to ask for the user name, a password.
+
+So for now, if someone wants to log in, then that person should have the password.
+
+Login to the jenkins.
+
+Open a new incognito window and open the jenkins URL - http://PublicIP:8080/
+
+Open the jenkins URL in an incognito window , it is asking to login to jenkins again.
+
+To disable the login 
+
+Go to  Manage jenkins -> configure Global security
+
+select the dropdown under Authorization - "Anyone can do anything"
+
+click on save.
+
+
+Now open a incognito window and open the jenkins URL , it will not ask for the password.
+
+Now it is open to all. Anyone can login to this and access.
+
+This is not a good practice to open  the jenkis for everyone. 
+
+so here under Authorization , our option always should be "Logged-in user can do anything"
+
+
+Enable the Login again
+-----------------------
+
+Go to  Manage jenkins -> configure Global security
+
+ select  radio button under Authorization - Logged-in users can do anything
+ 
+ Do not select the checkbox "Allow anonymous read access"
+
+Now every user need userid and password to access.
+
+
+
+Allow user to singup jenkins or create a new account
+===================================================
+
+Open the jenkins URL in an incognito window , it is asking to login to jenkins again.
+
+you are not able to see any link to create a new account .
+
+Go to  Manage jenkins -> configure Global security
+
+Under Security Realm
+
+select the drop down  under Security Realm - "Jenkins’ own user database"
+
+select the checkbox of -> Allow users to sign up
+
+click on save
+
+Open the jenkins URL in an incognito window , it is asking to login to jenkins again.
+
+Now you will see an link -> Please sign in below or create an account.
+
+
+click on create account
+
+username - test and fill all the other details.
+
+and create an account.
+
+Now this new user can do all the activity.
+
+it is not a good practice to provide an option to create an account.
+
+Disallow the other user to open the account
+
+Go to  Manage jenkins -> configure Global security
+
+Under Security Realm
+
+select the dropdown under Security Realm - "Jenkins’ own user database"
+
+uncheckbox of -> Allow users to sign up
+
+
+Activate the Role Based Authorization Plugin
+============================================
+Go to Manage Jenkins -> Manage Plugins
+
+click on "Availble"
+
+serach for "Role-based Authorization Strategy"
+
+Select Restart checkbox to restart the jenkins server.
+
+Now Go to  Manage jenkins -> configure Global security
+
+Now you will able to see  -> Role-Based Strategy option under Authorization.
+
+select the -> Role-Based Strategy option in the dropdown under Authorization and save
+
+You will see another option present in the screen 
+
+"Manage and Assign Roles"  under  security.
+
+we can assign different roles  and assign to the user.
+
+
+
+Create user in jenkins database
+=======================
+
+Go to  Manage jenkins 
+
+click on manage user
+
+click on "create user"
+
+username - student and fill all the details.
+
+click on create user.
+
+Open the jenkins URL in an incognito window , it is asking to login to jenkins again.
+
+Now enter new user - student . But you will not able to do any activity because Access denied.
+
+Because we have installed Role based Authorization, so it is showing access denied.
+
+
+Create and Assign Role to users
+==================================
+
+We created a user  and that user doesn't have any access .
+
+we will create a role and assign the role to user.
+
+Go to  Manage jenkins -> manage and Assign Roles
+
+click on Manage role 
+
+Create a Read-only Role.
+
+Enter "Read-only" under Role to add section. and click on "Add" button
+
+Role to add - Read-only  and select Read checkbox under "overall"
+click on save
+
+Go to  Manage jenkins -> manage and Assign Roles
+
+click on Assign Roles
+
+First add the "student" user  in the "User/group to add" section
+click add 
+
+select read-only  checkbox against "student" user
+
+save this
+
+Go to Firefox browser and open the jenkins
+Login as student user
+
+Now you will able to see the "Views" 
+click on view 
+
+Student user not able to see any jobs in jenkins.
+
+Assign Jobs access to the user
+------------------------------
+
+
+Go to  Manage jenkins -> manage and Assign Roles
+click on manage Roles
+
+select Read checkbox under Job section to "Read-only" role.
+
+Now Read-only already assigned to the student user
+
+Go to Firefox browser and open the jenkins
+Login as student user
+
+Now user can see all the job and build.
+
+But not able to execute or Build  any job.
+
+
+Create Build and Execution Role
+-------------------------------
+Go to  Manage jenkins -> manage and Assign Roles
+click on manage Roles
+
+Role to add - "execution"  and click on Add
+
+provide the access "Build" and Read" access under job section
+provide Read under overall section
+
+Go to  Manage jenkins -> manage and Assign Roles
+click on Assign Roles
+
+Now assign the "student" user to execution roles
+click on save
+
+Now open incognito window
+Login as student user
+
+
+
+
+
+
+UseCase - Project-Based Matrix Security
+=======================================
+
+you will configure security contexts in Jenkins for your company by creating and applying nested folders and ensuring that users only have access to items in their scope
+
+Step1 - Enable project based matrix security
+Step2 - Create user - James , Mary , Laura
+   james - Frontend Developer
+   Mary - Backend Developer
+   Laura - Server Admin
+
+Step3 - Create webdev folder and give James access
+
+Step4 - Create backend folder and give Mary full access
+
+Step5 - create tomcat folder inside the backend folder and give Laura access to this folder
+
+Step6- verify that james is not able to access the backend folder . 
+  Mary cannot see the webdev folder but can see tomcat folder and should access the tomcat folder job.
+  Laura can access only tomcat folder
+  
+ Step1
+------
+
+Go to Manage jenkins -> Configure Global security  
+
+Enable "Project-based Matrix Authorization Strategy"  under Authorization
+
+under Overall -> "Authenticated users" - Enable ( Read)
+save the changes
+
+
+ Step2
+------
+To create a New User
+
+Go to  Manage jenkins 
+
+click on manage user
+
+click on "create user"
+
+username - James , password - 123456 , Fullname - james , Email - james@james.com
+username - Mary , password - 123456 , Fullname - Mary , Email - mary@mary.com
+username - Laura , password - 123456 , Fullname - Laura , Email - laura@laura.com
+
+
+Step3
+------
+
+click on New Item
+Enter "webdev" and select "Folder " option
+click on ok
+
+Select "Enable project-based security" checkbox under Properties section 
+
+Inheritance Strategy dropdown  -> Do not inherit permission grant from other ACL
+
+click on Add user Button -> Add James 
+
+select "Grant all permission to James" by enable the checkbox Button at extreme right
+
+select "Grant all permission to Mary" Button at extreme end ( Not Required at this moment)
+
+Click  on save.
+
+create a new Job inside the webdev folder 
+job name - webdev-test ( Freestyle)
+
+click on save.
+
+
+Step4
+-----
+
+click on New Item
+Enter "backend" and select "Folder " option
+click on ok
+
+Select "Enable project-based security"
+
+Inheritance Strategy dropdown  -> Do not inherit permission grant from other ACL
+
+click on Add user Button -> Enter  "Mary"  and click ok
+
+select "Grant all permission to Mary" Button at extreme right
+
+click on save.
+
+Below section we will add later 
+
+--------------------------------------------------
+Goto the "backend" folder 
+Add user - "laura"  and Read only access to the job ( because laura should see tomcat folder , though she is able to see backend folder but she cannot run any job    under backend folder)
+click on save.
+--------------------------------------------------
+
+create a new Job inside the backend folder 
+job name - backend_test ( Freestyle)
+
+click on save.
+
+Step5
+-----
+
+To create a tomcat folder.
+
+Go the backend folder
+click on New item
+name - tomcat folder and select the folder option
+click on on
+
+select "Enable project-based security"
+
+Inheritance Strategy dropdown  ->  inherit permission  from parent ACL  ( because Mary needs to see all the folder)
+
+click on Add user Button -> Add Laura 
+
+select "Grant all permission to Laura" Button at extreme right
+
+click on save.
+
+create a new Job inside the tomcat folder 
+job name - tomcat-test ( Freestyle)
+
+click on save.
+
+
+Step - 6
+---------
+Laura can access only tomcat folder
+Mary cannot see the webdev folder but can see tomcat folder and should access the tomcat folder job.
+verify that james is not able to access the backend folder . 
+  
+  
+  
+Open a incognito window
+
+Login with Laura and verify her access
+
+Now Laura is not able to see any tomcat folder. Now we need to add Laura under backend folder.
+
+Go to jenkins admin user
+
+--------------------------------------------------
+Goto the "backend" folder 
+Add user - "laura"  and Read only access to the job ( because laura should see tomcat folder , though she is able to see backend folder but she cannot run any job    under backend folder. she should allow to run the job inside tomacat folder)
+click on save.
+--------------------------------------------------
+
+Login with Laura and verify her access again.
+
+Login with Mary and Verify the access.
+
+Mary should able to see the backend folder and backend job. She also able to see tomcat  folder and tomcat job..
+
+
+Login with James and Verify the access.
+
+
+
+
+
+How to Reset the jenkins admin password
+----------------------------------------
+
+
+To reset the jenkins admin password, You can simply disable the security in the config.xml file.
+
+1. If your jenkins is running on the Linux OS, edit the below file.
+
+vi /var/lib/jenkins/config.xml file.
+
+2. Search for the word <useSecurity>true</useSecurity>
+and change the word true to false. 
+
+3. Restart the Jenkins server.
+service jenkins restart
+
+4. Now go to the Jenkins portal again and Jenkins will not ask any credentials this time. 
+
+5. You navigate to "Manage Jenkins" -> 
+
+click on "people"  and click on "admin" user
+
+click on "delete" in the left side. to dlete the user.
+
+Click on Configure Global security -> Enable -  Role-Based Strategy under Authorization
+
+click on save .
+i
+Enable - Jenkins’ own user database under Security Realm
+
+
+6. You navigate to "Manage Jenkins" -> Click on Manage User under security
+click on create user
+ click on "admin" user and click configure
+ 
+ Enter password - New password
+ confirm password - New password
+
+ You navigate to "Manage Jenkins" -> Click on Manage User under security
+ Assign Role
+ Add "admin" and click on Add
+
+set the credentials and click on save.
+
+You navigate to "Manage Jenkins" -> Click on Configure Global security -> 
+
+select "jenkins own user database"
+
+select "Role based Strategy" under Authorization
+click on save.
+
+service jenkins restart
+or 
+
+5. Enable the security again by changing settings to <useSecurity>true</useSecurity> and restart the Jenkins again.
+
+service jenkins restart
+
+
+Now open the Jenkins URL in the browser
+
+click on Login - admin and new password
+
+s
+
+Note: 
+
+If your jenkins is running on Windows OS, config.xml file located in C:\Program Files (x86)\Jenkis\ folder
+

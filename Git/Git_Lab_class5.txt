@@ -1,0 +1,435 @@
+https://github.com/kiran3011/kiran_repository1/pull/2
+
+Making a Pull Request (PR) 
+===========================
+git clone https://github.com/awsdevops009/Earth.git
+
+cd Earth
+git branch dev 
+git checkout dev
+git push origin dev
+
+Now you are in the dev Branch
+
+create a file 
+touch abc.txt 
+git add abc.txt 
+git commit -m "File added"
+
+git push origin dev ( Now file has pushed to dev branch)
+
+Go to GitHub
+
+click on "Compare and Pull Request"
+
+Add the Reviewer's name in the left pane
+
+click on the " Create Pull Request"
+
+https://github.com/kiran3011/kiran_repository1/pull/2 ( copy the URL from your GitHub repo )
+
+Once your Pull request is reviewed by the Reviewer 
+
+Then you will see "Merge Pull request" 
+
+click on " confirm Merge"
+
+Now you will be able to see the file in the master branch.
+
+Delete a branch from local and remote with the below 2 commands
+-----------------------------------------------------------
+git branch -D dev ( dev branch delete from local)
+git push origin :dev (dev branch will delete from github as well)
+
+Rollback File
+--------------
+
+mkdir rollback 
+
+cd rollback
+
+git init
+
+touch abc.txt
+
+git status
+
+rm abc.txt (delete the file from working directory)
+---------------------------------------------------
+
+touch docl.txt git add docl.txt (Now file is in stagging Area)
+
+git status
+
+git rm --cached doel.txt (Now file rollback from stagging area to working directory)
+
+git status
+
+rm doc1.txt
+
+file added to the staging area and wants to remove the file both from staging area and working directory
+
+touch doc2.txt git add doc2.txt (Now file is in stagging Area)
+
+git status (Now the file is in stagging Area)
+
+if you want to delete permanently
+
+git rm-f doc2.txt (permanently delete the file)
+
+
+
+Rollback the file from commit (revert command will revert your code from the latest changes)
+-----------------------------
+
+vi index.html
+
+  oneline
+  save the file
+ 
+git add index.html
+git commit -m "add one line"
+
+git log --oneline
+
+vi index.html
+
+   add one more line
+   save the file
+
+git add .
+git commit -m "add 2nd line"
+
+git log --oneline
+
+vi index.html
+
+   add one more line
+   save the file
+
+git add .
+git commit -mn"add 3rd line"
+
+git revert Head ( it will revert latest commit)
+
+cat index.html
+
+git revert Head ( now it will revert the reverted item, means it will come to original file)
+
+cat index.html
+
+git revert <commit ID> ( it will revert the file till that commit id)
+
+RESET COMMAND (HARD RESET)
+--------------------------
+
+Hard reset  - to move files from local repo to back to older commit id or previous commit id (data will change according to that commit id)
+Soft reset  - to move files from local repo to Stagging area -only Head pointer changes ( no change to data inside the file
+Mixed reset - to move files from local repo to untracked / working directory
+
+vi playbook.yml
+
+----
+
+ - name: install and launch the simple NodeJS application
+    hosts: nodeserver
+    vars_files:
+      - secrets.yml
+    vars:
+      - destdir: /apps/samplenodeapp
+    tasks:
+
+      - name : install Node and NPM
+        become : yes
+        register: ymrepo
+        yum:
+           name: nodejs
+           state: latest
+
+git add.
+git commit -m " 1st file added "
+
+then again open the playbook.yml 
+
+modify the file
+
+git add.
+git commit -m " second modification on file"
+
+git log --oneline
+
+git reset--hard <first commit id>
+
+cat playbook.yml ( you will be able to see the first file"
+
+Again developer wants to see the 2nd file
+
+git reflog
+
+git reset--hard <2nd commit id>
+
+cat playbook.yml ( you will be able to get back to your latest changes")
+
+
+Git Reset ( soft and mixed )
+============================
+
+mkdir git_reset
+
+cd git_reset
+
+vi file1.txt
+
+git add.
+git commit -m " a file is added"
+
+vi file1.txt
+modify the file
+
+git add.
+git commit -m " 2nd modification is added"
+
+vi file1.txt
+modify the file
+
+git add.
+git commit -m " 3rd modification is added"
+
+git log --oneline
+
+git reset --soft <second commmit id>
+
+git status
+
+cat file1.txt ( you will see all the data present, soft reset is only changing the pointer from local repo to staging area)
+
+git status
+
+Because now file is in stagiing are i will commit the file again.
+
+git commit -m " again moving back to local repo from staging area"
+
+git reset --mixed <second commit id> ( you will see all the data present, mixed reset is only changing the pointer from local repo to working directory / untracked area)
+
+cat file1.txt
+
+
+GIT -TAG OPERATION
+==================
+1 Tagging is nothing but labeling the branch. 
+2. while commiting, we are doing the tagging. 
+3. whenever we are giving the code to customer, we tagging as Release 1.1 
+4. Then we modify the code and give to customer then, we are tagging as Release 1.2 
+5. Tagging is a name given to Release branch. so later point of time we can identify which release is given to customer.
+6. Tag is nothing but a label apply to a commit id. 
+7. git log ( to see the history of our branch) 
+8. git log --oneline( it will display history with proper format) 
+9. git log --oneline --graph
+
+Annotated tag is same as Lightweight tag except it has some little extra information.
+Tag operation allows giving meaningful names to a specific version in the repository. Suppose user-a and user-b decide to tag their project code so that they can later access it easily
+Working with Tags ------------------
+A tag points to an important point in history - v1.0
+
+2 Types of tags
+
+1.Annotated 
+2.light weight
+
+
+
+git tag tag_name (light weight tag)
+
+git tag -a tag_name -m " some information related to tag"
+
+git tag ( to see the list of tags)
+
+git show tag_name
+
+git push --tags ( to push tags into remote github)
+
+git tag -d tag_name ( to delete a tag locally)
+
+git push origin :tag_name ( to delete a tag in remote git hub)
+
+git tag tag_name older_commit id
+
+
+TAG UPDATE & DIFFERENCE
+=======================
+
+Go to master master branch
+
+modify the testi.txt
+
+git commit -am "test1.txt : modified"
+
+git tag -a v-3.1.0-alpha -m "Release 3.1"
+
+Go and modify the test1.txt file
+
+git commit -am "test1.txt : modified the 2nd line"
+
+git tag -a v-3.1.0-beta -m "Release 3.1 beta "
+
+git log --oneline --graph --decorate --all ( we will able to see both alph and beta commit in the top)
+
+git diff v-3.1.0-alpha v-3.1.0-beta
+
+git difftool v-3.1.0-alpha v-3.1.0-beta ( it will open a VI tool to see the difference)
+
+Delete a tag
+============
+
+git tag --list
+
+git tag v-3.1.0-alpha --delete git log --oneline --graph --decorate --all git tag ( To get the list of tag)
+
+push the tag to Github
+
+git push origin v-3.1.0-beta
+
+Delete a Tag from gitHub
+
+git push origin : v-3.1.0-beta ( Tag name should be preceeded by : to delete the tag. verify tag
+
+Tag Usecase ( Lightweight Tag)
+==============
+
+mkdir Tag-example cd Tag-example
+
+git clone https://github.com/axsde vop5009/starter-web.git
+
+cd starter-web
+
+git log --oneline --graph --decorate --all
+
+git tag myTag
+
+git log --oneline --graph --decorate --all (Now you can see myTag is present in top)
+
+git tag --list
+
+git show my tag
+
+git tag --delete mytag
+
+git log --oneline --graph --decorate --all
+
+Annotated tag
+-------------
+
+Annotated tag is same as Lightweight tag except it has some little extra information.
+git tag -a v-1.0
+( as it is a annotated tag, it will open a editor for you to add eatra information
+add Release 1.0
+save the file.
+
+git tag --list
+
+git log --oneline --graph --decorate --all
+
+git show y-1.0
+
+Git Strating with Fresh Project
+=============================
+
+Go To Git folder in D Drive
+
+git init fresh-project
+
+cd fresh-project 13 ls -al
+
+cd .git ls cd ..
+
+git status
+
+vi First.txt one line added to the file git add.
+
+git status
+
+git commit (It will open the editor)
+
+add the commit messge and save the file
+
+touch abc.txt
+
+git commit -a -m "add files"
+
+Unstaging Files
+
+restore the file from staging Area
+
+git restore --staged filename.txt
+
+vi xyx.txt
+
+first line added
+
+git add.
+
+git status
+
+git restore --staged xyz.txt
+
+git status
+
+git add.
+
+git commit -m "file added"
+
+git status
+
+Now you deleted some line and add extra code to the file
+
+vi
+
+1st line deleted
+2nd line deleted
+
+save the file
+
+git status
+
+now you want the original file
+
+git checkout -- xyz.txt ( you will get the original file. this command takes your file to latest version/ commit)
+
+git status
+
+GIT ALIAS ( used to change command name to a short name instead of typing whole command)
+=========
+
+git config --global alias.st status
+
+git st
+
+cd..
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+

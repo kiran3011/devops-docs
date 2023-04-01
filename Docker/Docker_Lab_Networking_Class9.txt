@@ -1,0 +1,751 @@
+Docker Networking
+------------------
+
+
+
+Docker Installation
+====================
+
+Create a ubuntu ec2 instance
+
+apt-get update -y
+apt-get install docker.io -y
+
+service docker start
+service docker status
+
+apt install docker-compose  ( Install docker-compose)
+
+docker --version
+docker version
+
+docker-compose --version
+
+
+Ip address -> is a unique address of a machine.
+
+x.x.x.x
+0-255.0-255.0-255.0-255
+where x = 0-255
+
+2^32
+IPv4 - 32 bit 
+IPv6 - newly came to IP address world. ( 128 bit) - 340 decibillion IP address
+
+192.168.0.1 ( private ip address)
+
+ifconfig 
+Default Gataway - IP address of a router.
+
+traceroute google.com
+
+192.168.1.1 - ip address of the wifi router
+
+Routing - it helps to connect one network to another network.
+
+within the network , we create another network is called- subnetwork
+
+CIDR - class
+
+192.168.0.10 = 32
+
+192.168.10.0/24
+
+2^32-24 = 2^8 = 256 IP address
+
+Bridge - create communication between host and container
+
+whenever docker installed in the unix machine , it create  a bridge in the machine.
+
+Network are 2 types -> single Host and Multiple Host
+
+single-host -> local
+multi-host -> docker swarm
+
+3 pillars of Docker Network
+----------------------------
+
+CNM -> Container Network Model.is like a requirement document. This is where all the networking specification has been typically designed. CNM vs CNI ( Container Network Interface). Docker swam primarely relies on CNM. But kubernetes relies on CNI.
+		
+Libnetwork -> it is implementation of CNM. Libnetwork is a application created out of it.
+
+Drivers -> which does specific network. what is the endpoint you are creating.
+
+
+
+Docker Network
+--------------
+
+There are four types of Docker network
+
+- Bridge( Default network driver)
+- Overlay
+- MACVLAN
+- Host
+- NULL
+
+Bridge Network
+--------------
+- Creates a private network internal to the host
+- Allows Communication between containers in the network
+- Blocks communication outside the network
+- External access is granted by exposing ports
+- Handles Linux Bridges , iptables rules , routing , service discovery
+- Scope is local - connectivity limited to single host
+
+
+Overlay Networks
+----------------
+
+- Enables networking across multiple hosts
+- used in swarms where services may lie on different hosts
+- Decouples container network from underlying physical network - eases container portability
+- Can encrypt communication between container
+
+MACVLAN Network
+---------------
+
+- Allow your container to be assigned a MAC address - make container appear as a physical device on the network
+- Useful for connecting to legacy application which expect a physical connection to the network and use MAC address
+
+  
+
+Host Networks
+-------------
+ 
+- Use the host's network directly
+- Remove isolation between container and host
+- If the container binds to port 80 , the app will be available through port 80 on the host's IP address
+- Has no effect if your container does not publish ports
+
+
+
+
+docker network
+docker network ls
+docker network inspect bridge ( you will see the configuration)
+
+docker network ls ( you will see scope as local i.e single host)
+
+docker info ( To see details of the network bridge 
+
+docker network create -d bridge --subnet 10.10.0.0/24 test-bridge  ( 256 IP address can accommodate)
+docker network ls ( to see your own network bridge)
+
+docker network inspect test-bridge
+
+docker run --network test-bridge --name testcont1  -d -it ubuntu:xenial /bin/bash (Now container is running my own bridge)
+
+docker run --network test-bridge --name testcont2  -d -it ubuntu:xenial /bin/bash
+
+docker network inspect test-bridge ( Now you are able to see container details)
+
+docker attach testcont1 ( going inside the testcont1 contenair )
+
+apt-get update ( to update the dependency)
+
+apt-get update && apt-get install -y iputils-ping
+
+apt-get install iputils-ping ( to install the ping command in docker container)
+
+ping 10.10.0.3 ( testcont2 IP address)
+ ping testcont2
+ 
+ exit
+ 
+ 10.10.0.2/24
+ 10.10.0.3/24
+ 
+ Multi Host overlay ( docker Swarm)
+ --------------------
+ Multi-Host networking ->machine should be reachable to each other. Node1 reachable to Node2 and Node2 reachable to Node3.
+ 
+ VXLan tunnel -> it create between 2 machine.
+ 
+ we need 2 machine to do the multi-host
+ 
+ create one more ubuntu machine
+ and install docker in that machine.
+ 
+ Login to 1st machine and ping to other machine private IP address ( thats mean under-lay connection is established)
+ 
+ ping <private ip address>
+ 
+ Login to machine1 and execute below command
+ 
+ docker swarm init --advertise-addr <private IP of machine1>
+ 
+ docker swarm init --advertise-addr 172.31.82.168
+  
+  This command will create the current machine as manager and it will also generate the token-id that we can paste in other 
+  machine to join swarm as worker
+  
+ docker swarm join --token SWMTKN-1-16syt67kerzsr64cev8l1icf0ggptqb5oczmukvjlm0a0mkgsx-6zvysa4ic12csm5n675sjpjj4 172.31.82.168:2377
+ 
+ Then take the command and execute in other machine. ( worker machine)
+ 
+ TCP port 2376 for secure Docker client communication. This port is required for Docker Machine to work. Docker Machine is used to orchestrate Docker hosts.
+
+TCP port 2377. This port is used for communication between the nodes of a Docker Swarm or cluster. It only needs to be opened on manager nodes.
+
+TCP and UDP port 7946 for communication among nodes (container network discovery).
+
+UDP port 4789 for overlay network traffic (container ingress networking).
+
+
+  
+Docker swarm Lab
+=================
+  
+  docker service create --name webserver -p 9090:8080 --replicas 4 tomcat
+  
+  docker service ps webserver  ( four tomact service is running , 2 in manager machine and 2 in worker machine)
+  docker service inspect webserver		  
+
+Login to manager machine
+docker network ls
+
+docker network create -d overlay test-over
+docker service create --name Test-svc --network test-over --replicas 2 hello-world sleep id
+docker service ls
+
+docker service inspect Test-svc
+
+
+
+Creating an Overlay Network
+---------------------------
+
+docker-machine ls ( nodes in a docker swarm)
+
+docker network create --driver overlay my-overlay-net ( create a overlay network and give a unique name)
+
+docker network ls
+
+docker service create --name test-nginx -p 80:80 --replicas 2 --network my-overlay-net nginx  ( create a service with overlay network)
+
+docker service ls
+
+docker service ps test-nginx ( how many service has been created)
+
+docker node ls
+
+docker service inspect test-nginx ( Inspect the service to see networking information
+
+docker service rm test-nginx  ( remove the service)
+
+docker network rm my-overlay-net ( Remove overlay network)
+			  
+
+
+
+
+Host Port (To find Host port Number)
+---------
+docker run -d --publish-all jpetazzo/web ( no port mentioned explicitly)
+
+docker images
+docker ps
+
+Port -> 0.0.0.0:32768->8000/tcp
+
+Host port number -> 32768
+container port Number -> 8000
+
+ifconfig -> to check the ip address
+
+we can also access the webserver using the host port.
+
+<public IP address>:32768
+
+curl 3.86.181.1:32768 ( we can see the application is running)
+
+docker
+docker port <container id> <port>
+docker port ebd7eb07fbb7 8000 ( it will display the host port number)
+
+now kill the container 
+docker kill container id
+
+Container IP address
+---------------------
+Run the container with explicit port number
+
+docker run -d -p 88:8000 jpetazzo/web
+
+docker ps
+<public IP address>:80
+
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container-id> (To know the container IP address)
+172.17.0.2
+
+ping <container IPaddress>
+
+docker rm $(docker ps -a)
+docker rm $(docker ps -q) --force
+docker rmi $(docker images) 
+docker rmi -f $(docker images) 
+
+https://writing.pupius.co.uk/apache-and-php-on-docker-44faef716150
+
+
+-------------------------------------------------------------------------------------------
+
+
+
+Install dokcer in a Linux machine
+---------------------------------
+
+yum update -y
+yum install docker
+service docker start
+
+docker network ls
+docker network create -d=bridge my-new-bridge ( Create a network and specify the driver to manage the network)
+
+docker network ls
+
+the scope of the network mentioned in the list is local ( because Bridge and host network limited to local)
+
+
+specify advance option
+-----------------------
+
+specify subnetwork values directly using the --subnet option
+
+docker network create --driver=bridge --subnet=192.168.0.0/16 br0
+
+docker network ls
+
+Additionally, you also specify the --gateway --ip-range and --aux-address options.
+
+docker network create \
+  --driver=bridge \
+  --subnet=172.28.0.0/16 \
+  --ip-range=172.28.5.0/24 \
+  --gateway=172.28.5.254 \
+  br01
+  
+  docker network ls
+  
+  
+ Containers and network
+-----------------------
+
+docker network ls
+docker run -it -d --name mybusybox busybox  ( Run a container from busybox images)
+
+docker ps -all
+
+docker network connect my-new-bridge mybusybox ( connect the container to our newly created network)
+
+docker inspect mybusybox ( container shows details information about network)
+
+
+docker run -it -d --name mynginx --network=my-new-bridge nginx  ( connect the container to network at runtime)
+
+docker ps -all
+
+docker inspect mynginx
+
+docker network ls
+
+docker ps ( it will show how many containers are running)
+
+docker inspect mybusybox ( you can see it connect to my-new-bridge user defined network and my default bridge network)
+
+disconnect mybusybox from user-defined network
+
+docker network disconnect my-new-bridge mybusybox
+
+docker inspect mybusybox ( mybusybox is now only connected to default "bridge" network)
+
+
+
+
+Creating a Host Network
+-----------------------
+
+docker network ls
+
+docker run -d -it --name test-nginx --network host nginx  ( run a container with host network)
+
+docker ps -a
+
+open the browser and open the IPAddress:80 ( you should able to see the nginx is running)
+
+
+Network Cleanup (pruning and Removing Network)
+---------------
+
+docker network ls
+
+docker network rm my-new-bridge ( remove network). First disconnect every container associated with this network
+
+docker ps
+
+docker inspect mynginx ( to see which network is using)
+
+docker network disconnect my-new-bridge mynginx  ( disconnect the container from the network)
+
+docker network rm my-new-bridge
+
+docker network ls
+
+dokcer network rm 329f04cf582a ( remove the network by network id)
+
+docker network prune ( remove unused network)
+
+
+Docker Inspect
+--------------
+
+docker network ls
+docker network inspect bridge ( inspect bridge network in details)
+
+docker network inspect test-bridge  ( inspect used defined network)
+
+
+
+
+Usecase- 3
+----------
+
+You are developing a new containerized application for a client. The application will consists of two containers: one for the frontend application, and one for the database. Your client has security concerns about the database, and they want it to run on a private network that is not publicly accessible.
+
+You will need to create two networks. One will house the frontend application that is publicly accessible, and the other network, which is flagged as internal, is where the database will reside. Create a MySQL container connected to the private network and a Nginx container that is connect to both networks.
+
+
+Create the frontend network and Use the docker network to create the frontend network:
+
+docker network create frontend
+docker network ls
+
+Create the localhost network and User the docker network command to create the localhost network:
+
+docker network create localhost --internal
+docker network ls
+
+Create a MySQL container
+Create a MySQL container that is attached to the localhost network:
+
+docker container run -d --name database --network localhost -e MYSQL_ROOT_PASSWORD=test1234 mysql:5.7
+
+docker images
+docker ps
+
+
+Create an Nginx container that is attached to the localhost network:
+
+docker container run -d --name frontend-app --network frontend nginx:latest
+
+docker images
+docker ps
+
+Connect frontend-app to the internal network
+Connect frontend-app to the localhost network:
+
+docker network connect localhost frontend-app
+
+docker container inspect frontend-app ( Now you can see 'frontend' and 'localhost' is under network section)
+
+docker network rm my-new-bridge
+
+docker network ls
+
+dokcer network rm 329f04cf582a ( remove the network by network id)
+
+docker network prune ( remove unused network)
+
+docker rmi $(docker images -q) ( To remove all the images)
+
+docker rm $(docker ps -a -q) --force ( To remove all the container)
+
+docker tag test1:1 test2:1 ( To rename a image from test1:1 to test2:1)
+
+
+
+Usecase- 4 ( Bridge Network)
+----------
+
+all containers on a host can communicate with one another over a default bridge network. However, in some cases, you may want to isolate groups of containers by allowing them to communicate over their own isolated network.
+
+ you will have the opportunity to create a custom bridge network designed to facilitate communication between containers on a Docker host.
+
+Create a bridge network called prices-net.
+
+docker network create --driver bridge prices-net
+docker network ls
+
+
+Create a container for the component that serves base prices.
+docker run --name base-price -d --network prices-net dashpradeep/prices-base-price:1
+
+Create a container for the component that serves products on sale.
+
+docker run --name sales -d --network prices-net dashpradeep/prices-sales:1
+
+Create a container for the component that serves the total prices of products.
+
+docker run --name total-price -d --network prices-net -p 8080:80 dashpradeep/prices-total-price:1
+
+docker ps
+
+docker container inspect total-price
+
+curl localhost:8080
+
+open in a chrome browser  public IP address:8080
+
+You should get a list of products and their final prices. The total-prices container calculates these prices by first querying the other two containers. This communication takes place over the prices-net bridge network.
+
+
+docker rm $(docker ps -a -q) --force ( To remove all the container)
+
+docker rmi $(docker images -q) ( To remove all the images)
+
+docker network prune ( remove unused network)
+
+Usecase-5 ( custom overlay network)
+---------
+
+Deploying a Service on an Overlay Network
+
+
+Bridge networks are a powerful tool for controlling communication between containers on a single host, but what if you need to provide isolated networking between containers in Docker Swarm? With Docker Swarm, you can use custom overlay networks to allow groups of containers to communicate transparently, even if they are running on different swarm nodes.
+
+ you will have the opportunity to work with overlay networks. You will set up a custom overlay network and deploy three different services that communicate with each other using this network.
+
+docker swarm init
+
+docker swarm join --token SWMTKN-1-5flpezart8vl9riahmksoscqiu3t71se9yk1wczcmdvrrhpd0r-dwqoa70lwebkqgaghyotmdggl 172.31.81.114:2377
+
+It will create swarm network
+
+docker swarm leave
+
+ Create the prices-overlay-net overlay network.
+ 
+ docker network create --driver overlay prices-overlay-net
+ 
+ Create the base-price service.
+ 
+ docker service create --name base-price --network prices-overlay-net --replicas 3 dashpradeep/prices-base-price:1
+ 
+ docker service ls
+ docker service ps base-price
+ 
+ Create the sales service.
+ 
+ docker service create --name sales --network prices-overlay-net --replicas 3 dashpradeep/prices-sales:1
+  docker service ls
+  
+ Create the total-price service
+ 
+ docker service create --name total-price --network prices-overlay-net --replicas 2 -p 8080:80 dashpradeep/prices-total-price:1
+ 
+ docker service ps total-price
+ 
+ Verify that you get the total price data.
+ 
+ curl localhost:8080
+ 
+ open in a chrome browser  public IP address:8080
+
+ 
+ You should see a list of products and the total price for each. These prices are calculated by communicating with the base-price and sales services using the custom overlay network.
+ 
+docker rm $(docker ps -a -q) --force ( To remove all the container)
+
+docker rmi $(docker images -q) ( To remove all the images)
+
+docker network prune ( remove unused network)
+
+docker service rm  base-price
+
+docker network rm <network ID>
+
+
+Usecase - 6 ( Bridge and Host network)
+--------------
+
+Docker Container Networking
+
+Each container should serve a single purpose, such as running one application like a web server. Containers can be powerful by themselves, but when connected together, they are far more useful. For example, a web server container can be connected to a database container to provide application storage. Docker provides multiple options for networking containers
+
+
+Default - Docker create a few networks by default.
+
+Bridge - Bridge network isolate application from each other.
+
+Host - The host network does not isolate the container from the host.
+
+
+List the default networks.
+
+Run an httpd container named web1 without specifying a network and see which network it uses.
+Attempt to connect to web1 by name and by IP from another container run without a network specified.
+
+Explore Bridge Networks
+
+Create a new bridge network named test_application.
+
+Run an httpd container named web2 in the test_application network.
+
+Attempt to connect to web2 by name and by IP from another container within the test_application network.
+Attempt to connect to web1 from a container in the test_application network.
+
+Explore the Host Network
+Run an httpd container named web3 on the host network.
+
+Attempt to connect to web3 directly from the server.
+
+Attempt to connect to web3 from another container on the host network.
+Attempt to connect to web1 and web2 from a container on the host network.
+
+Lab session
+----------
+
+
+List the default networks:
+-------------------------
+docker network ls
+
+Run an httpd container named web1, without specifying a network, and see which network it uses:
+
+docker run -d --name web1 httpd:2.4
+docker inspect web1
+
+Take note of the IPAddress.  - 172.17.0.2
+
+Run a container using the busybox image, and see if you can connect to the web1 server:
+docker run --rm -it busybox
+
+Check the container's networking, and verify it is in the same IP range as web1:
+ip addr
+Ping the web1 container using the IP address:
+ping <WEB1_IP_ADDRESS>  ( user able to ping the IP address)
+
+Attempt to ping the web1 container by name:
+ping web1  ( you can findout by IP address but not by name becaue it doesn't understand the name)
+
+Attempt to access web1 using wget:
+wget <WEB1_IP_ADDRESS> ( user able to downlaod)
+
+Exit the container:
+exit
+
+docker ps -a
+
+Explore Bridge Networks
+----------------------
+
+Create a new bridge network named test_application:
+
+docker network create test_application
+
+docker network ls
+
+Run an httpd container named web2, in the test_application network:
+
+docker run -d --name web2 --network test_application httpd:2.4
+
+Check the status of the container:
+docker ps -a
+
+Verify that web2 was added to the test_application network:
+docker inspect web2 ( IP address will be in different range as it is a bridge network)
+
+IP address- 172.23.0.2
+            172.23.0.3
+
+Run a container using the busybox image, and see if you can connect to the web2 server, within the test_application network:
+docker run --rm -it --network test_application busybox
+
+
+
+Check the container's networking, and verify it is in the same IP range as web2:
+ip addr
+Ping the web2 container using the IP address:
+ping <WEB2_IP_ADDRESS>  
+
+Attempt to ping the web2 container by name:
+ping web2 ( Now you able to access by name as it is a non-default network, custom bridge network identify the name of the container)
+
+Using wget, attempt to access web2 with the hostname:
+wget web2 ( It is working fine)
+Attempt to ping web1:
+ping <WEB1_IP_ADDRESS> ( Not able to ping to the web1 IP address, they are isolation network)
+
+Attempt to access web1 using wget:
+wget <WEB1_IP_ADDRESS>  ( Not able to download to the web1 IP address)
+
+Exit the container:
+exit
+
+Explore the Host Network
+-------------------------
+Run an httpd container named web3 on the host network:
+docker run -d --name web3 --network host httpd:2.4
+
+Check the status of the container:
+docker ps -a  ( web3 is listing on the host network not in the docker network)
+
+Attempt to connect to web3 directly from the server:
+wget localhost
+
+Stop web3:
+docker stop web3
+
+Attempt to connect to web3 directly from the server again:
+wget localhost
+
+Start web3:
+docker start web3
+
+Run a container using the busybox image, and see if you can connect to the web3 server:
+docker run --rm -it --network host busybox
+
+ping web3
+Using wget, attempt to access localhost within the busybox image:
+
+wget localhost 
+Attempt to ping web2:
+
+ping <WEB2_IP_ADDRESS>  ( we should able to connect because you are in the host network. it gives a option to access othernetwork from host network)
+Attempt to ping web1:
+
+ping <WEB1_IP_ADDRESS>
+
+
+Docker network - Usecase
+========================
+
+docker network create --drive bridge mynetwork1
+
+docker network create mynetwork2 ( if you don't specify any network , it will create a bridge network. because bridge network is default network
+
+
+docker network ls
+
+docker run --name c1 -it --network mynetwork1 busybox ( Now you will inside the container c1)
+
+ctrl+P and ctrl+C ( don't write exit command to comeout of the container)
+
+docker inspect c1 ( Note down the IP address of c1 container -172.18.0.2)
+
+docker run --name c2 -it --network mynetwork1 busybox ( Now you will inside the container c2)
+
+ping < IP address of c1 container>  ( we should able to communicate with IP address because both are running on same mynetwork1)
+
+ctrl+P and ctrl+C ( don't write exit command to comeout of the container)
+
+docker inspect c2 ( Note down the IP address of c2 container -172.18.0.2)
+
+create a c3 network in mynetwork2
+-------------------
+docker run --name c3 -it --network mynetwork2 busybox ( Now you will inside the container c3)
+
+ping < IP address of c1 container>  ( we should not  able to communicate with IP address because both are running on different network )
+
+ping < IP address of c2 container>  ( we should able to communicate with IP address because both are running on different network)

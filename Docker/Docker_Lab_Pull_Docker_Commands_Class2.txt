@@ -1,0 +1,624 @@
+Docker Images & container
+=========================
+
+Installing Docker in Ubuntu Machine
+-----------------------------------
+
+Create a Ubuntu machine and install docker with below command.
+
+sudo apt update
+
+And then install any prerequisite packages.
+sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+
+
+We can now add Docker's GPG key.
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+
+To add the Docker repository, we now just need to run:
+sudo add-apt-repository  "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+And update our server again.
+sudo apt update
+
+We can now install the necessary packages.
+sudo apt install docker-ce docker-ce-cli containerd.io
+
+
+sudo groupadd docker ( Add the docker group)
+
+sudo gpasswd -a $USER docker (Add ourselves to the group)
+service docker status
+
+7. sudo service docker restart (Restart the Docker daemon)
+
+8. docker --version (Check that Docker works without sudo)
+
+
+To finish up, we want to add our ubuntu user to the docker group.
+sudo usermod ubuntu -aG docker
+
+-----------------------------------------------------------------------
+
+2nd way to Install docker
+------------------------
+
+Installing docker on Linux(Ubuntu)
+==========================================
+1 Create an aws ubuntu instance
+2 Connect to it using git bash
+3 Open http://get.docker.com
+4 Copy and paste the first two commands
+  
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  
+  sh get-docker.sh
+
+To check if docker is installed or not
+docker --version  
+
+docker version
+
+Container -> A standardized unit of software. A package of code and dependencies to run that code.(e.g NodeJs Code + the NodeJs runtime)
+
+Imp - The same container always yields the exact same application and execution behaviour. No matter where or by whom it might be executed.
+
+
+Docker Images - It is a collection of binaries and libraries. whcih are necessary for one software application to run.
+
+Container - Running instance of an image is called as a container. Any number of container can be created from one images.
+
+Docker Host - The machine on which docker is installed is called as a Docker Host. It can be windows , linux or Mac.
+
+
+
+Docker client - This is an application which is part of docker engine , which is responsible for accepting the docker commands from the user 
+                and pass it to docker daemon.
+
+Docker Daemon - This is a background process which is also a part of docker engine and the responsibility of docker daemon is to accept the docker command from the docker client and depending on the kind of command , route them to docker images , docker containers , or docker registery.
+
+Docker Registery - This is the location where all docker images are stored. It is of 2 types. Public and private
+
+Public Registery - It is hub.docker.com  and images uploaded here can be access by anyone.
+
+Private Registery - It is setup within our server using a docker images called registery and only our organization team member can access this registery.
+
+
+LifeCycle of Container
+======================
+
+
+docker run hello-world
+ 
+ 
+ To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+
+More Lab Session
+================				
+				
+docker ps
+
+docker run busybox echo Hi there ( this container run for sometime but it exit quickly)
+
+docker container ls
+
+docker ps ( we are not able to see the any busybox container)
+
+docker ps -a ( It will be display all running and exited container)
+
+docker run busybox ping google.com ( this container will run until you terminate)
+
+
+Open a another terminal and execute below command
+
+docker ps 
+
+docker ps --all  ( It will show all running container)
+
+Run the below container
+-----------------------
+
+docker run alpine
+
+docker container ls ( you will not see alpine container is running because it exited immediately because as container has only one task , so it got existed immediately)
+
+docker container ls -a ( To see  all stopped container)
+
+--------------------
+
+docker run -it --name  testcontainer alpine 
+
+ls ( you will able to see all the filesystem)
+
+apk upgrade ( it will upgrade the alpine package)
+
+exit ( Now container is stopped after your exit command but still you can see in stopped container list)
+
+docker container ls ( you will not able to see testcontainer  container is running)
+docker container ls -a ( To see  testcontainer stopped container)
+
+-------------------------
+
+if we want our container should run in the background in all the time
+
+docker run -dt --restart always --name  bg-container alpine ( This container will run in background and if due to any reason container shutdown , automatically the container will restart)
+
+docker container ls ( you will able to see container is running in background)
+
+we can use below restart options
+
+ --restart always ( It will restart the container always when it is down)
+ --restart on-failure ( when the container will failure , it is going to restart)
+ --restart no ( default)
+
+ ------------------------------
+ 
+ If you want container to remove permanently after your work done. (Generally we use this for any R & D task)
+ 
+ docker run -it --name  rm-test --rm alpine 
+ 
+ apk upgrade
+ 
+ ls
+ 
+ exit ( Now container will remove from the system. you cannot see the container in stopped state also)
+ 
+ docker container ls -a ( you should not able to see this rm-test container because it is deleted/removed from the system permanently after work has done because we have used options as --rm alpine)
+ 
+ 
+ 
+ 
+
+Container management
+======================
+
+Create a container - Take the file system from Image and store in a container.
+start a container - Run the startup command. ( for e.g Run hello-world). It is not going to show output in the terminal.
+
+
+
+docker container
+docker stop <container-ID>
+
+docker stop testcontainer
+
+docker container ls ( Now testcontainer is stopped)
+
+docker rm testcontainer
+
+
+
+Restarting Stopped Container
+----------------------------
+
+docker ps -all
+
+docker run busybox echo Hi there
+
+docker ps -all
+
+docker start <container-ID>  ( To start the stopped container)
+docker start -a  <container-ID>
+
+Removing Stopped container
+--------------------------
+
+docker ps -all
+
+Now this stopped container is using my disk space. so i want to clean the stopped container permanently.
+
+docker system prune  (  Press - Y)
+
+docker container prune ( It will remove all the stopped container)
+
+docker container ls -a
+
+docker container ls
+
+Rename a Container
+------------------
+
+docker rename testcontainer web01  ( To rename the container)
+
+docker container ls
+
+Monitoring Container
+--------------------
+
+docker stats
+
+press ctrl+c to exit
+
+
+
+
+Retriving the docker Logs
+-------------------------
+
+docker create busybox echo Hi there
+
+docker ps -a ( It will show docker image busybox is created)
+
+docker start <container-ID>
+
+docker ps -a ( It will show docker image busybox is existed)
+
+docker logs <container-ID>
+
+
+Stop and Kill container
+-----------------------
+
+When you issue a docker stop commands, a hardware signal is sent to the process, the primary process inside that container.
+In the case of Docker Stop, we send a sig term message, which is short for terminate signal. It's the message that's going to be received by the process, telling it essentially to shut down on its own time.
+Sick term is used any time that you want to stop a process inside of your container and shut the container down
+
+Kill Container
+--------------
+
+On the other hand, the Docker Kill command issues, a sig kill or a kill signal to the primary running process inside the container securely essentially means you have to shut down right now and you do not get to do any additional work.
+
+So ideally, we always stop a container with the docker, stop command in order to give the running process inside of it a little bit of time to shut itself down. Otherwise, if it feels like the container has locked up and it's not responding to the Docker stop command, then we could issue Docker kill instead.
+
+docker run -dt --restart always --name  bg-container alpine
+
+docker ps
+
+docker stop <container-ID> ( we have to wait 10 second then automatically container will stop)
+
+docker start <container-ID>
+
+docker kill <container-ID>  ( It will kill instantly, no grace period)
+
+
+Docker Execute ( docker exec)
+==============
+when you are running docker on your machine, every single container that you are running is running inside of a virtual machine running Linux.
+
+we've got three different running processes all inside in theory of a running container or really inside of a Linux environment, every process that we create in a Linux environment has three 
+communication channels attached to it
+
+STDIN standard in -> It is used to communicate information into the process.
+STDOUT standard out  -> the standard out that is attached to any given process is going to convey information that is coming from the process.
+STDERR standard error. - Standard Error very similar, but it conveys information out of the process that is kind of like an error in nature.
+
+These channels are used to communicate information either into the process or out of the process standard.
+
+-it  is two separate flag -i and -t1
+
+So by adding on the -i flag, we are saying make sure that any stuff that I type gets directed to standard in
+
+so by adding -t flag is to make sure that all the text that you are entering in and that is coming out shows up in a nicely formatted manner on your screen.
+
+
+docker run -i ubuntu  bash ( It will wait for user's input to start , it will not show any prompt)
+ls ( It will display all the list of folder) 
+
+docker run -it ubuntu  bash ( It will take you directly inside the container)
+
+docker run -it busybox sh
+
+ls
+ping google.com
+
+Container Isolation
+-------------------
+Two container are running from same images are not sharing the same file system
+
+Open Terminal 1
+
+docker run -it busybox sh
+
+Open Terminal 2
+
+docker run -it busybox sh
+
+Open Terminal 3
+
+docker ps
+
+Now create some file in Terminal 1 
+
+Now go to Terminal 2 and do a ls command , you will not see same filename in Terminal 2
+
+Because both container are running in different file system.
+
+
+
+Docker command
+==============
+
+Working on docker Images
+------------------------
+
+docker pull image_name ( To download a docker images)
+
+docker push image_name ( To upload a docker image into the registery)
+
+docker image ls ( To see the list of all the docker images available in docker host.
+
+docker images
+
+docker search image_name ( To search for an image in the registery from the command prompt.
+
+docker rmi image_name ( To delete an image from the docker host
+
+docker tag image_name registery_ip/new_image_name ( To tag an image with a registery)
+
+docker commit containe_name/container-ID new_image_name ( To create a new image from a docker container)
+
+docker build -t new_image_name . ( To create a new image from a dockerfile)
+
+docker system prune -a ( To delete all unused images)
+
+Working on docker container
+==========================
+
+docker start containe_name/container-ID ( To start a stopped container)
+
+docker stop  containe_name/container-ID ( To stop a running  container)
+
+docker rm -f containe_name/container-ID ( To remove a running container)
+
+docker restart containe_name/container-ID ( To restart a running container)
+
+docker restart -t 30 containe_name/container-ID ( To restart after 30 second)
+
+docker stop $(docker ps -aq)  ( To stop all running container) 
+
+docker rm $(docker ps -aq)  (To delete all stopped containers)
+
+docker images -q ( To see list of images id)
+
+docker rmi $(docker images -q) ( To remove all the images)
+
+docker rm $(docker ps -a -q) --force ( To remove all the container)
+
+17 To delete all containers running and stopped
+   docker rm -f $(docker ps -aq)
+
+18 To get detailed info about a container
+   docker inspect container_name/container_id
+
+19 To get the logs generated by a container
+   docker logs container_name/container_id
+
+20 To see the ports used by a container
+   docker port container_name/container_id
+
+21 To go into a container which is moved into background
+   docker attach container_name/container_id
+
+22 To run any command or process in a container other than the default
+   process of that container
+   docker exec -it container_name/container_id command/process
+
+23 To see the list of running contianers
+   docker container ls
+
+24 To see the list of all the containers running as well as stopped
+   docker ps -a
+
+25  To create a container from a docker image
+    docker run image_name
+	
+    Run commnad options
+    --------------------
+    --name    Used to give an name to the container
+    -d        Used to run the container in the background in detached mode
+    -it       Used to open interactive terminal in the container
+    -v        Used to mount an external device or directory as a volume
+    --volumes-from  Used to create reusable volumes
+    -e        Used for passing environment variables
+    -p        Used for port mapping,it will link the dockerhost port(external port with the container port(internal port)
+              Eg:   -p 8080:80  here 8080 is the dockerhost port and 80
+              is the container port
+    -P        Used for automatic port mapping it will map the container port
+              with a port greater than 30000 on the host machine
+    --link    Used to create a multi container architecture.This is used in
+              breaking a monolithic application and making it work as a  microservices
+    -rm       This will delete the container on exit 
+    --network   This is used to specify on which network these containers
+                should run
+    --memory    Used for fixed amount of memory allocation to the containers
+    --cpus     Used for specifying how many cpus should be used by the container
+     
+
+Working on docker networking
+------------------------------------
+26 To see the list of networks
+   docker network ls
+
+27 To get detailed info about  a network
+   docker network inspect network_id/network_name
+
+28 To create a network
+   docker network create --driver network_type network_name
+
+29 To attach a running container to a network
+   docker network connect network_id/network_name container_name/container_id
+
+30 To remove a container from a network
+   docker network disconnect network_id/network_name container_name/container_id
+
+31 To delete a network
+   docker network rm network_id/network_name
+
+Working on docker volumes
+--------------------------------
+32 To see the list of all the docker volumes
+   docker volume ls
+
+33 To create a new docker volume
+   docker volume create volume_name
+
+34 To get detailed info about a volume
+   docker volume inspect volume_name/volume_id
+
+35 To delete a volume
+   docker volume rm volume_name/volume_id
+
+
+   
+   
+ Installing docker on Linux(Ubuntu)
+==========================================
+1 Create an aws ubuntu instance
+2 Connect to it using git bash
+3 Open http://get.docker.com
+4 Copy and paste the first two commands
+  
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  
+  sh get-docker.sh
+
+To check if docker is installed or not
+docker --version  
+
+docker version
+
+opne the https://hub.docker.com/
+
+click on explore
+
+Centos Images
+--------------
+
+docker pull centos
+
+docker images
+
+docker run --name c1 -it centos  ( Now you will create a container and go inside container)
+
+ls
+touch file1
+
+exit  ( exit from the container)
+ 
+docker rm -f c1 ( To remove the container)
+
+docker run --name c2 -it centos ( create a container and go inside container)
+
+exit
+docker inspect c2
+
+Jenkins Images
+--------------
+
+docker pull jenkins/jenkins:lts
+
+docker run --name j1 -p 9090:8080 -d jenkins/jenkins  ( 9090 is the host machine  jenkins port and  8080 is container port)
+
+Run the jenkins in browser - http://54.152.181.184:9090
+
+docker exec -it <container-ID> bash ( To inside the container)
+
+docker exec -it 2bb2f66cd443 bash
+
+cat /var/jenkins_home/secrets/initialAdminPassword
+
+Tomcat Images
+
+-------------
+
+serach for "tomact" , you will find lots of tomact images
+
+docker pull tomcat
+
+docker images
+
+docker run --name t1 -p 8888:8080 -d tomcat
+
+Run the tomcat in browser - http://54.152.181.184:8888
+   
+
+Automatic port mapping
+---------------------
+docker pull nginx
+
+docker images
+
+docker run --name n1 -d -P nginx( Capital P is for automatic container port and host port should be greater than 30000)
+
+docker container ls (now we can see nginx port number)
+
+docker inspect <nginx Container-ID>
+docker inspect <nginx Container-ID> | grep IP
+
+
+docker images
+
+docker run --name u1 -it ubuntu  ( download images and run the container)
+
+exit
+
+docker pull mysql:5
+
+docker images
+
+docker run --name mydb -d -e MYSQL_ROOT_PASSWORD=test123 mysql:5
+
+docker container ls
+
+docker exec -it mydb bash
+
+mysql -u root -p 
+
+password -> test123
+
+show databases
+
+use sys;
+
+CREATE TABLE EMP
+       (EMPNO NUMBER(4) NOT NULL,
+        ENAME VARCHAR(10),
+        JOB VARCHAR(9),
+        MGR NUMBER(4),
+        HIREDATE DATE,
+        SAL NUMBER(7, 2),
+        COMM NUMBER(7, 2),
+        DEPTNO NUMBER(2));
+
+INSERT INTO EMP VALUES
+        (7369, 'SMITH',  'CLERK',     7902,
+        TO_DATE('17-DEC-1980', 'DD-MON-YYYY'),  800, NULL, 20);
+INSERT INTO EMP VALUES
+        (7499, 'ALLEN',  'SALESMAN',  7698,
+        TO_DATE('20-FEB-1981', 'DD-MON-YYYY'), 1600,  300, 30);
+		
+		
+select * from emp;
+
+
+CREATE TABLE playground (
+		equip_id serial PRIMARY KEY,
+		type varchar (50) NOT NULL,
+		color varchar (25) NOT NULL,
+		location varchar(25) check (location in ('north', 'south', 'west', 'east', 'northeast', 'southeast', 'southwest', 'northwest')),
+		install_date date
+	);
+
+INSERT INTO playground (type, color, location, install_date) VALUES ('slide', 'blue', 'south', '2014-04-28');
+INSERT INTO playground (type, color, location, install_date) VALUES ('swing', 'yellow', 'northwest', '2010-08-16');
+
+SELECT * FROM playground;
+
+DELETE FROM playground WHERE type = 'slide';   
+   
+
+docker create hello-world  ( File sytem is ready and you will able to see Container-ID )   
+				
+
+
+
+

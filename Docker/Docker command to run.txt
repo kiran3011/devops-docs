@@ -1,0 +1,31 @@
+apt-get update
+apt-get install docker.io
+service docker start
+docker build -t mysql-image .
+docker images
+docker run --name mysql-cont -d -p 3306:3306 mysql-image:latest
+ docker ps
+docker exec -it mysql-cont bash
+
+mysql --host 0.0.0.0 --port 3306 --user essential --password
+Enter password – e55ential
+USE EAS;
+SHOW TABLES;
+
+show databases;
+
+ create table emp ( emp_id varchar(12));
+ show tablesl
+
+
+mysql --host 0.0.0.0 --port 3306 --user root --password
+
+Enter password -> mysql
+
+docker ps -a
+docker rm -f containerID
+docker rmi -f imageID
+
+cd /etc > my.cnf will be available
+
+apt install mysql-client-core-5.7

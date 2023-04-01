@@ -1,0 +1,69 @@
+Step to configure Github  and Git
+===================================
+Install the Gitbash software.
+
+1. create username in the Github using your official email id 2. provide your username to the admin to add into Github
+
+3. Verify you are able access the Github Repo
+4. setup or create your SSH Key configuration in Github and Git
+5. Clone the repo from github to your local ( workspace)
+6. Configure your global Identity in the Git. ( username and Email id)
+
+Create a PR(Pull Request) to merge your code from your branch to master Branch
+Requesting  to review my modification  and approve.
+if it will approve , then you cam merge the code from your branch to Master branch.
+
+   git clone git@github.com:awsdevops009/Earth.git
+   git branch dev
+   git checkout dev
+   created 2 files as part of your modification.
+   git add .
+   git status
+   git commit -m "File added"
+   git status
+   git push origin dev ( pushing the dev branch from local to Github Repo)
+   Go to Github and verify new branch "dev" should present
+   click on "compare and Pull request" to create a New PR
+   Enter Proper comment to Review your modification.
+   Create a Pull Request
+   click on the Reviewer Button and the reviewer.
+   Reviewer will review the code and approved.
+   click on "Merge Pull Request" Button and choose "squash and merge" 
+   click on "confirm squash and merge"
+   Now you can see code is merged from dev branch to Master branch
+  Now Go to Master branch and verify the updated changes should present.
+  now it is time to delete the "dev" branch
+  git branch -D dev ( dev branch delete from local)
+  git push origin :dev ( dev branch will delete from gitHub as well)
+  
+  Next Day
+  --------
+   Go to your Project in the Git or Local
+   git pull ( you will get all the code from master branch to our Local)
+   
+  git branch dev
+   git checkout dev
+   created 2 files as part of your modification.
+   git add .
+   git status
+   git commit -m "File added"
+   git status
+   git push origin dev ( pushing the dev branch from local to Github Repo)
+   Go to Github and verify new branch "dev" should present
+   click on "compare and Pull request" to create a New PR
+   Enter Proper comment to Review your modification.
+   Create a Pull Request
+   click on the Reviewer Button and the reviewer.
+   Reviewer will review the code and approved.
+   click on "Merge Pull Request" Button and choose "squash and merge" 
+   click on "confirm squash and merge"
+   Now you can see code is merged from dev branch to Master branch
+  Now Go to Master branch and verify the updated changes should present.
+  now it is time to delete the "dev" branch
+  git branch -D dev ( dev branch delete from local)
+  git push origin :dev ( dev branch will delete from gitHub as well)
+
+you need to configure your email id and username with github using git global config
+
+you need to verify developer are storing the code properly or not
+

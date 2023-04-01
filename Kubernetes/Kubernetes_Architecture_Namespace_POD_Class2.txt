@@ -1,0 +1,984 @@
+Clustering and Nodes
+--------------------
+Nodes are an essential part of the Kubernetes cluster. They are the machines where your cluster's container workloads are executed.
+
+Kubernetes implements a clusterd architecture, In a typical production environments , you will have multiple server that are able to run your work loads (containers)
+
+These servers which actually run the  containers are called nodes.
+
+A Kubernetes cluster has one or more control servers which manage and control the cluster and host the kubernetes API. These control servers are usually separate from worker nodes, which run application within the cluster.
+
+Get more information about a specific node:
+kubectl describe node $node_name
+
+kubectl get nodes
+
+kubectl describe node < node name>
+
+we can see allocated resource section to get more info.
+
+
+
+Kubernetes Architecture and Components
+=====================================
+
+Node - A node is a machine, physical or virtual on which Kubernetes is installed. A node is a worker machine and that is where containers will be launched by Kubernetes. It was also known as minions.
+
+
+Cluster - A Cluster is a set of nodes grouped together. This way even if one node fails you have your application still accessible from the other nodes.
+Moreover having multiple nodes helps in sharing load as well.
+
+When a node fails how do you move the workload of the field node to another worker node? Thats where the Master comes in.
+
+The Master is another node with Kubernetes installed in it and is configured as a Master. The master watches over the nodes in the cluster and is responsible for the actual orchestration of containers on the worker nodes.
+
+A Kubernetes cluster is made up of multiple individual components running on the various machines that are part of the cluster. the major Kubernetes software components and what each of them do. How these components are actually running in our cluster currently. 
+
+Get a list of system pods running in the cluster:
+
+kubectl get pods -n kube-system ( This will display some of the backend system pods run in the kubernetes cluster.)
+
+The control plane components contain below 4 items and control the cluster. it form the kube master.
+
+The control plane components manage and control the cluster.
+
+1. etcd ->  etcd key-value store. etcd is a distributed reliable key value store used by Kubernetes to store all data used to manage the cluster. 
+When you have multiple nodes and multiple Masters in your cluster, etcd stores all that information on all the nodes in the cluster .  etcd is responsible for implementing locks within the cluster to ensure that there are no conflicts between the Masters. This is essentially data store for kubernetes controller or kubernetes master server. All the information about what pods are running in the cluster or nodes are running on the cluster etc.
+ 
+2. kube-apiserver -> The API server acts as the front end for Kubernetes. The users, management devices, command line interfaces, all talk to the API server to interact with Kubernetes clusterServes the kubernetes API, the primary interface for the cluster. It is a simple REST base API. when you run kubectl command , actually kubectl communicate to the API server.
+
+3. kube-controller-manager ->  The controllers are the brain behind orchestration. They are responsible for noticing and responding when nodes, containers or end points goes down. The controllers make decisions to bring up new containers in such cases. The Container Runtime is the underlying software that is used to run containers.Bundles several components into one package. It control all the backend stuff.
+
+4. kube-scheduler -> The Scheduler is responsible for distributing work or containers across multiple nodes.It looks for newly created containers and assigns them to nodes.Schedules pods to run on individual nodes. kube-scheduler is responsible for when to run pods on what nodes.
+
+These above 4 component forms the kubernetes control plane. These components are necessary to control the cluster and make up the kube master.
+
+
+In addition to the control plane , each node also has 
+
+Below components are not part of the control plane , but part of  each node 
+
+1. kubelet -> the worker nodes have the kubelet agent that is responsible for interacting with a master. to provide health information of the worker node and carry out actions requested by the Master on the worker nodes.Kubelet is the Agent that executes containers on each node. It acts as a middleman between kubernetes API and runtime here it is  docker. kubelet is running as service. master server and worker node both has a kubelet server.
+
+2. kube-proxy -> Kube-proxy handles most of the networking stuff. Manages the network rules on each node and performs connection forwarding or load Balancing for Kubernetes cluster services. It handles network communication between pods. It Handles network communication between nodes by adding firewall routing rules. It talking pods of one node to pod of other node. here we have two nodes , one is master node and other is worker node. so we have two kube-proxy displaying.
+
+Available proxy Modes
+
+- UserSpace
+- iptables
+- ipvs( alpha in 1.8)
+
+Check the status of the kubelet service:
+
+sudo systemctl status kubelet
+
+
+
+
+Cluster Architecture
+====================
+
+Kubeadm - kubeadm is a tool that will simplify the process of settings up our kubernetes cluster.
+
+Kube Master ( Container Runtime(Docker, Containerd) , Kubeadm , kubelet, kubectl , control plane)
+Kube Node1 ( Container Runtime(Docker or Containerd) , Kubeadm , kubelet, kubectl)
+
+Docker is the container runtime that we will be using.  container runtime is the software that actually runs the containers. Kubernetes supports several other container runtime (such as rkt and containerd) , but docker is the most popular.
+
+Here we will use containerd container runtime.
+
+Kubernetes Installation
+==========================
+
+1. Install all the below kubernetes command in both kube-master and worker-node
+
+create 2 ubuntu ec2 instance of type t2.medium or t2.micro
+
+Set the hostname for master machine ( Run the command in master node)
+------------------------------------
+
+sudo hostnamectl set-hostname k8s-control
+hostname
+
+set the hostname of worker-node1 ( Run the command in worker node)
+---------------------------------
+
+sudo hostnamectl set-hostname k8s-worker1
+hostname
+
+
+Login to master machine
+
+sudo vi /etc/hosts
+
+Private IP addresss of master k8s-control
+Private IP addresss of worker-node1 k8s-worker1 ( hostname of worker-node1)
+Private IP addresss of worker-node2 k8s-worker2  ( hostname of worker-node2)
+
+172.31.83.201 k8s-control
+172.31.83.82 k8s-worker1
+
+
+Add the above there lines in both the worker-node machine as well
+
+sudo vi /etc/hosts
+
+172.31.18.94 k8s-control
+172.31.21.171 k8s-worker1
+
+Restart both the machine.
+
+Installation of kubernetes
+==========================
+
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+Run Below command in master node and worker node ( all Nodes)
+
+cat << EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+
+sudo modprobe br_netfilter
+
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+
+Install and configure containerd.
+--------------------------------
+
+sudo sysctl --system
+
+sudo apt-get update && sudo apt-get install -y containerd
+
+sudo mkdir -p /etc/containerd
+
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+
+
+On all nodes, disable swap.
+
+sudo swapoff -a
+
+sudo cat /etc/fstab
+
+
+On all nodes, install kubeadm, kubelet, and kubectl.
+---------------------------------------------------
+
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+cat << EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+sudo apt-get update
+
+sudo apt-get install -y kubelet=1.23.0-00 kubeadm=1.23.0-00 kubectl=1.23.0-00
+
+sudo apt-mark hold kubelet kubeadm kubectl ( It will not auto upgrade the other version)
+
+Configure cgroupDriver ( For New version of Kubernetes) - Install in Both the Node( Master and Worker)
+------------------------------------------------------
+
+sudo sed -i "s/cgroup-driver=systemd/cgroup-driver=cgroupfs/g" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+
+On the control plane node only, initialize the cluster and set up kubectl access. ( Only run in the Master Node)
+--------------------------------------------------------------------------------
+
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --kubernetes-version 1.23.0
+
+ mkdir -p $HOME/.kube
+ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+ kubeadm  version
+ 
+kubectl get pods -o wide --all-namespaces ( all pods are running except core-dns. so we need to install network plugin)
+ 
+ kubectl get nodes  ( status is not ready because we have not setup networking. Here we will use calico network plugin)
+ 
+Run below command to in cluster node to get the join command
+
+kubeadm token create --print-join-command
+
+copy the command and execute in Node machine.
+
+ 
+Now worker nodes needs to join with kubernetes cluster node.
+
+Run below command to in cluster node to get the join command
+
+kubeadm token create --print-join-command
+
+Login to worker-node
+
+Run the join command as a sudo user 
+
+sudo kubeadm join 172.31.92.254:6443 --token dcx2w3.r0nt2xniqiit7jcy \
+        --discovery-token-ca-cert-hash sha256:3a93a351a79f263ae71d714a9dc1ac469dacb2b0cd39930f8034aacdf609d40f
+		
+sudo kubeadm join 172.31.83.201:6443 --token awyrpk.thtajite53i18dzl --discovery-token-ca-cert-hash sha256:ef188cfdce9575bf8059dc439c5e902d0afed8ecd1369d512bdea2ed107ecf26
+		
+
+Verify the cluster is working.
+-----------------------------
+
+kubectl get nodes  ( status is not ready because we have not setup networking. Here we will use calico network plugin)
+
+
+==========================================================================
+If you are getting error in control machine , or not able to get the details of nodes.
+
+The connection to the server 172.31.24.75:6443 was refused - did you specify the right host or port?
+
+
+Run below command in control Machine
+------------------------
+sudo sed -i "s/cgroupDriver: systemd/cgroupDriver: cgroupfs/g" /var/lib/kubelet/config.yaml
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+kubeadm token create --print-join-command
+
+
+Then Reset the kubeadm in Worker Node and execute the join command in worker Node.
+
+sudo kubeadm reset  ( Need to run in worked node machine)
+
+sudo kubeadm join 172.31.86.131:6443 --token 7965eq.59gypf01xzk8txlc --discovery-token-ca-cert-hash sha256:48dd54620ae140a6fcbcaaf048f28ba8cc0fd7adbc64640435a9e35351fe4e38
+
+--------------
+
+
+Configuring Networking with calico
+====================================
+
+Kubernetes supports a variety of networking solution to provide networking between containers.Here we will use one called calico network plugin . you can also use Flannel plugin for cluster network.
+
+Once the Kubernetes cluster is set up, we still need to configure cluster networking in order to make the cluster fully functional. if you not install network plugin , the status will be in "Not Ready"
+
+Install the Calico network add-on. only in Master Node
+
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml  ( Run this without sudo)
+
+
+
+Run the below command in master node
+kubectl version
+
+kubectl get nodes	
+
+Verify that all the nodes now have a STATUS of Ready:
+
+kubectl get nodes ( Now nodes are ready status)
+
+kubectl get pods -n kube-system ( namespace kube-system , make sure all the backend system pods are running)
+
+kubectl cluster-info
+
+kubectl get all
+
+
+2. create a pod.yaml in the kube-master node.
+
+vi pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+
+To run the pod.yaml file use below command
+	
+kubectl apply -f pod.yaml
+
+
+How Kubernetes execute command using Kubectl
+============================================
+
+When you run a kubectl command, the kubectl utility is infact reaching to the kube-apiserver.
+
+The kube-api server first authenticates the request and validates it. It then retrieves the data from the ETCD cluster and responds back with the requested information.
+
+
+In this case, the API server creates a POD object without assigning it to a node, updates the information in the ETCD server updates the user that the POD has been created.
+
+The scheduler continuously monitors the API server and realizes that there is a new pod with no node assigned the scheduler identifies the right node to place the new POD on and communicates that back to the kube-apiserver.
+
+The API server then updates the information in the ETCD cluster. The API server then passes that information to the kubelet in appropriate worker node.
+
+The kubelet then creates the POD on the node and instructs the container runtime engine to deploy the application image.
+
+Once done, the kubelet updates the status back to the API server and the API server then updates the data back in the ETCD cluster. A similar pattern is followed every time a change is requested.
+
+The kube-apiserver is at the center of all the different tasks that needs to be performed to make a change in the cluster.
+
+
+To summarize, the kube-api server is responsible for Authenticating and validating requests, retrieving and updating data in ETCD data store, in fact, kube-api server is the only component that interacts directly with the etcd datastore.
+
+The other components such as the scheduler, kube-controller-manager & kubelet uses the API server to perform updates in the cluster in their respective areas.
+
+
+
+Namespaces
+===========
+
+
+https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
+
+
+Namespaces are essentially virtual clusters that are backed by the same physical cluster. So you're creating a bunch of different objects, pods, containers, various different Kubernetes objects in your cluster, and you can separate and organize those objects into different namespaces that usually don't really interact with each other.
+
+
+So basically just a way to separate and organize your objects in the cluster. They're particularly useful if you have a lot of different applications running
+in your cluster,or if you have multiple different teams that are using your cluster.
+
+Kube system namespace-  when the cluster is first set up kubernetes, creates a set of pods and services for its internal purpose such as those required by the networking solution,  The DNS service etc. to isolate these from the user and to prevent you from accidentally deleting or modifying these services kubernetes creates them under another namespace created at cluster startup named Kube system
+
+kube public - This is where resources that should be made available to all users are created.
+
+All clusters have a default namespaces. Kubeadm also creates a kube-system namespace for system components.
+
+kubectl get namespaces ( Get a list all the existing namespace in our cluster)
+
+kubectl api-resources --namespaced=true | head ( Print the supported namespaced resources)
+
+kubectl api-resources --namespaced=false | head (Print the supported non-namespaced resources. they can be part of namespace )
+
+kubectl describe namespaces ( Namespaces have state , Active and Terminating ( when it is deleting)
+
+kubectl describe namespaces kube-system ( Describe the details of an individual namespace)
+
+kubectl run nginx –-image nginx
+
+kubectl get pods
+
+kubectl get pod --all-namespaces ( Get all the pods in our cluster across all the namespace.)
+
+kubectl get all --all-namespaces ( Get all the resources across all of our namespaces)
+
+If you don't specify a namespace, the default namespace is assumed.
+
+kubectl get pods --namespace my-namespace
+
+kubectl get pods --namespace kube-system
+
+Create a Namespace
+-----------------
+
+kubectl create namespace my-namespace
+
+kubectl create namespace playground ( Imperatively create a namespace)
+
+kubectl create namespace Playground  ( starting with capital P. The Namespace "Playground" is invalid: metadata.name: Invalid value: "Playground")
+
+Declaratevely crete a namespace
+
+vi namespace.yaml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: playgroundyaml
+
+kubectl apply -f namespace.yaml
+
+kubectl get namespaces
+
+ kubectl delete namespaces playground
+  
+kubectl create ns my-ns  ( create your own namespaces.)
+
+To assign an object to a custom namespace, simply specify its metadata.namespace attribute.
+
+Now create a pod using newly created namespace " my-ns"
+
+vi my-ns.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-ns-pod
+  namespace: my-ns
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+	
+kubectl create -f my-ns.yml ( Create the pod with the created yaml file.)
+
+kubectl get pod  ( No resource found because this pod is running in "my-ns" namespace. whenever no namespace mentioned , it is pointing to default namespace. )
+
+kubectl get pod -n default
+
+kubectl get pods -n my-ns ( Use the -n flag to specify a namespace when using commands like kubectl get.)
+
+kubectl describe pod my-ns-pod -n my-ns ( You can also use -n to specify a namespace when using kubectl describe)
+
+kubectl delete pods --all --namespace my-ns ( Delete all the pods in the particular namespace)	
+
+kubectl get all
+
+kubectl get all --all-namespaces
+
+
+kubectl delete pods pod_name
+
+
+
+
+============================================================
+
+Kubernetes API and API Server
+=============================
+
+API Object
+----------
+- Collection of primitive to represent your system state. we can define desired state.
+- Enables configuration of state
+
+Object are Organized by 
+
+- Kind  -> Pod , Service , Deployment
+- Group -> core , apps , storage
+- version -> v1 , beta, alpha 
+
+
+Working with API object
+------------------------
+
+- first  Pods are up and running.
+
+-  These are used to deploy our container based applications in Kubernetes. 
+
+- Then there's Deployments, which allow us to declaratively deploy applications in our cluster and control our applications in terms of the container image or version of our application and also scale our application.
+
+- There are Services that provide persistent access point and load balancing services for applications running on Pods. 
+
+- then finally, PersistentVolumes. These are used to provide persistent storage to our container based applications. 
+
+
+
+API Server
+----------
+
+- The sole way to interact with your cluster
+- The sole way kubernetes interact with your cluster. It need to exchange the data between the component of cluster itself.
+- Client/Server architecture.
+- Client submits requests over HTTP/HTTPS and server responds to the requests.
+- It implements a RESTful API over HTTP using JSON. So we're going to exchange JSON objects between client and server using our RESTful API, so GET, SET, and POST operations.
+
+- API server is stateless . this means is any configuration changes that we've made in our cluster via API objects aren't stored in the API server. 
+
+- They're actually serialized and persisted into the cluster data store, which is traditionally etcd.
+
+
+Kubernetes API Primitives
+=========================
+
+Kubernetes API primitive, also known as Kubernetes objects, are the basic building blocks of any application running in Kubernetes. Building and managing Kubernetes applications means working with objects. It is essential to be familiar with Kubernetes objects in order to develop applications for Kubernetes.
+
+kubectl config get-contexts ( Get information about our current context , ensure we are logged into the correct cluster)
+
+kubectl config use-context kubernetes-admin@kubernetes ( Change our context if needed, if you have more than one cluster , you can set the current cluster)
+
+kubectl cluster-info ( Get the Information about the API server for our current context. which should be kubernetes-admin@kubernetes)
+
+kubectl cluster-info dump ( To see debug and diagnose cluster problems)
+
+kubectl api-resources | more  ( Get a list of API Resources available in the cluster. we can see pod, service and deployment)
+
+kubectl api-resources $object_type $object_name
+
+kubectl api-resources -o name
+
+kubectl get pods -n kube-system
+
+kubectl get nodes
+
+kubectl get nodes $node_name
+
+kubectl get nodes <Name of the Node>
+kubectl get nodes ip-172-31-51-224
+
+kubectl get nodes k8s-worker1
+
+kubectl get nodes k8s-worker1 -o yaml
+
+kubectl get nodes $node_name -o yaml
+kubectl get nodes ip-172-31-51-224 -o yaml ( Details information of the nodes. yaml representation of the nodes)
+
+kubectl describe node $node_name
+
+kubectl describe node ip-172-31-51-224
+
+Pod
+====
+
+
+With kubernetes our ultimate aim is to deploy our application in the form of containers on a set of machines that are configured as worker nodes in a cluster. 
+
+However, kubernetes does not deploy containers directly on the worker nodes. The containers are encapsulated into a Kubernetes object known as PODs. 
+
+A POD is a single instance of an application. A POD is the smallest object, that you can create in kubernetes.
+
+
+
+- Wrapper around your container based application
+- One or more container can run in one pod
+- Resources (  the resources associated with the execution environment that is your application, so things like storage and networking, any environment variables or application level configurations )
+
+- controllers could also facilitate for application recovery, again, keeping things in a desired state. So if for whatever reason a pod goes offline or becomes unavailable, Kubernetes can sense this and will recover and make sure that you have the correct number of pods up and running in your cluster. 
+
+- bare or naked pods in Kubernetes ->  a bare/naked pod is is a pod that's deployed and not under the control of a controller, such as a deployment, a replica set, or a daemon set or other type of controller that's available in Kubernetes.
+
+ And the reason  you don't want to run a bare or naked pod is that they won't be recreated for you in the event of a failure. 
+
+ Example
+ -------
+ 
+ - you have a single node kubernetes cluster with a single instance of your application running in a single docker container
+encapsulated in a POD.
+
+- What if the number of users accessing your application increase and you need to scale your application? You need to add additional instances of your web application to share the load. 
+
+- Now, were would you spin up additional instances? Do we bring up a new container instance within the same
+POD? No! We create a new POD altogether with a new instance of the same application. 
+
+-  Now we have two instances of our web application running on two separate PODs on the same kubernetes system or node.
+What if the user base FURTHER increases and your current node has no sufficient capacity? 
+
+- THEN you can always deploy additional PODs on a new node in the cluster. You will have a new node added to the cluster to expand the cluster’s physical capacity. 
+
+- PODs usually have a one-to-one relationship with containers running your application. To scale UP
+you create new PODs and to scale down you delete PODs. You do not add additional containers to an existing POD to scale your application. 
+ 
+ Multi-Container Pods
+ ===================
+ 
+ - PODs usually have a one to one relationship with the
+containers, but, are we restricted to having a single container in a single POD? No!
+
+- A single POD CAN have multiple containers, except for the fact that they are usually not multiple containers of the same kind. 
+
+- if our intention was to scale our application, then we would need to create additional
+PODs. But sometimes you might have a scenario were you have a helper container,
+that might be doing some kind of supporting task for our web application such as
+processing a user entered data, processing a file uploaded by the user etc.
+
+- you want these helper containers to live along side your application container. In that 
+case, you CAN have both of these containers part of the same POD, so that when a
+new application container is created, the helper is also created and when it dies the
+helper also dies since they are part of the same POD. 
+
+- The two containers can also communicate with each other directly by referring to each other as ‘localhost’ since
+they share the same network namespace. Plus they can easily share the same storage space as well.
+ 
+=============
+Pods are one of the most essential Kubernetes object types. Most of the orchestration features of Kubernetes are centered around the management of Pods.
+
+How to create a pod. how to edit and delete pods after they are created.
+
+
+vi my-pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: ['sh', '-c', 'echo Hello Kubernetes! && sleep 3600']
+	
+
+kubectl create -f my-pod.yml
+
+kubectl get pods
+
+kubectl explain pods | more  ( more information about the pod , documention for the pod. Here you will see details of the pod)
+
+kubectl explain pods.spec | more ( Look more closely we need in pod.spec  and pod.spec.containers)
+
+kubectl explain pods.spec.containers | more
+
+kubectl api-resources --api-group=apps ( List of the objects available in that API Group)
+
+kubectl explain deployment | head ( The version specified in the deprecation warning)
+
+kubectl explain deployment --api-version apps/v1beta2 | head ( The version specified in the deprecation warning too)
+
+kubectl explain deployment --api-version apps/v1 | head ( we should one use this api-version because it is a stable api-version)
+
+kubectl api-versions | sort | more ( print the supported version on the API server )
+
+Now we will change the app: myapp-1 in the pod yaml file
+
+kubectl apply -f my-pod.yml
+
+kubectl edit pod my-pod ( we can edit the pod using edit command directly)
+
+kubectl delete pod my-pod	
+
+kubectl get pods
+
+==================================================
+
+API Request
+-----------
+
+kubectl create -f my-pod.yml
+
+kubectl get pods
+
+kubectl get pods my-pod
+
+kubectl get pods my-pod -v 6 ( we can use the -v option to increase the verbosity of our request. It will display requested resource URL . Focus on VERB , API Path and Response code)
+
+kubectl get pods my-pod -v 7 ( same output as 6 , add Http Request Headers.Focus on application type and User-Agent
+
+kubectl get pods my-pod -v 8 ( same output as 7, adds Response header and truncated Response Body)
+
+kubectl get pods my-pod -v 9 ( same output as 8, add full response. Focus on the bottom and Look for the metadata)
+
+kubectl proxy & ( Run the kubectl proxy in the background, this will authenticte use to the API server. Using our local kubeconfig for authentication and setting)
+
+curl http://localhost:8001/api/v1/namespaces/default/pods/my-pod | head -n 20 
+
+bg
+fg
+ctrl + c
+
+bg
+
+kubectl get pods --watch -v 6 &  ( watch on pods will watch on the resourceVersion on api/v1/namespaces/default/pods
+
+netstat -plant | grep kubectl ( we can see the kubectl keep the TCP session open with the server.
+
+bg
+fg
+ctrl + c ( kill the background job)
+
+Accessing the logs
+-----------------
+
+kubectl logs my-pod
+
+kubectl logs my-pod -v 6 ( more information about the log)
+
+
+
+POD Understanding
+=================
+
+However, kubernetes does not deploy containers directly on the worker nodes. The containers are encapsulated into a Kubernetes object
+known as PODs. A POD is a single instance of an application. A POD is the smallest object, that you can create in kubernetes.
+
+Kubernetes uses YAML files as inputs for the creation of objects such as POD's, replicas, deployment services, etc. All of these
+
+follow similar structure Kubernetes definition file always contains 4 top level fields.
+
+- API version
+- kind
+- metadata 
+- spec
+
+These are the top level or root level properties.
+
+These are also required fields so you must have them in your configuration file.
+
+- API Version
+--------------
+The first one is the API version.
+
+This is the version of the Kubernetes API you're using to create the objects.
+
+Depending on what we are trying to create we must use the right API version. 
+
+Few other possible values for this field are apps/v1. or extensions/v1Beta
+
+- kind
+-------
+The kind refers to the type of object we are trying to create .So we will set it as POD.
+
+Some other possible values here could be replica set or deployment or service , replica, which is what you see
+
+- metadata 
+----------
+
+The metadata is data about the object like its name labels etc. first two where you have specified a string value,
+
+this is in the form of a dictionary.
+
+- spec
+------
+
+Depending on the object we are going to create.
+
+This is where we would provide additional information to Kubernetes pertaining to that object.
+
+This is going to be different for different objects  to get the right format for each since we are only creating a pod with a single container in it.
+
+It is easy. Spec is a dictionary.
+
+So add a property under it called containers. Containers is a list or an array. The reason this property is a list is because the parts can have multiple containers within them.
+
+Lab Session
+============
+
+create a pod.yaml file
+create a deployment.yaml file
+
+
+vi pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello-world-pod
+spec:
+  containers:
+  - name: hello-world
+    image: gcr.io/google-samples/hello-app:1.0
+    ports:
+    - containerPort: 80
+
+vi deployment.yaml
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: gcr.io/google-samples/hello-app:1.0
+        ports:
+        - containerPort: 8080
+
+
+#Start up kubectl get events --watch and background it.
+kubectl get events --watch &
+
+#Create a pod we can see the scheduling, container pulling and container starting.
+kubectl apply -f pod.yaml
+
+#Start a Deployment with 1 replica. We see the deployment created, scaling the replica set and the replica set starting the first pod
+kubectl apply -f deployment.yaml
+
+#Scale a Deployment to 2 replicas. We see the scaling the replica set and the replica set starting the second pod
+kubectl scale deployment hello-world --replicas=2
+
+#We start off with the replica set scaling to 1, then  Pod deletion, then the Pod killing the container 
+kubectl scale deployment hello-world --replicas=1
+
+kubectl get pods
+
+# exec a command inside our container, we can see the GET and POST api requests through the API server to reach the post.
+
+kubectl -v 6 exec -it PASTE_POD_NAME_HERE -- /bin/sh
+
+kubectl -v 6 exec -it hello-world-pod -- /bin/sh
+
+ps
+exit
+
+#Kill our port forward session.
+fg
+ctrl+c
+
+kubectl delete deployment hello-world
+kubectl delete pods hello-world-pod
+
+
+
+
+
+
+
+Basic Container Configuration
+=============================
+https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+
+When building applications in Kubernetes, it is often necessary to provide some configuration for your containers.
+
+some frequently-used container configuration options: command, args, and containerPort.
+
+specify custom commands for your containers
+
+vi my-command-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-command-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: ['echo']
+  restartPolicy: Never
+  
+kubectl create -f my-command-pod.yaml
+
+kubectl get pods
+
+You can also add custom arguments like :
+
+
+vi my-args-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-args-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: ['echo']
+    args: ['This is my custom argument']
+  restartPolicy: Never
+
+kubectl create -f my-args-pod.yaml
+
+kubectl get pods
+
+  
+  
+  pod with a containerPort:
+============================
+
+
+vi my-containerport-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-containerport-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: nginx
+    ports:
+    - containerPort: 80
+
+kubectl create -f my-containerport-pod.yaml
+	
+kubectl get pods	
+  
+Lab session for creating a pod
+==============================
+
+Creating Kubernetes Pods
+Pods are the essential building-block of any Kubernetes application.
+
+Create a yaml file containing the pod spec for the nginx pod.
+
+kubectl create ns web ( To create the namespace)
+
+vi nginx.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  namespace: web
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    command: ["nginx"]
+    args: ["-g", "daemon off;", "-q"]
+    ports:
+    - containerPort: 80
+	
+kubectl create -f nginx.yml (Create the pod from the yaml file)
+
+kubectl get pods -n web  (You should see the pod. It should have a status of Running )
+
+
+POD Lab
+==========
+
+UseCase - 1
+-----------
+start nginx  as a pod in the kubernetes cluster and name the pod as webserver 
+
+kubectl run --image nginx webserver
+
+kubectl get pods
+
+kubectl describe pod pod_name
+
+kubectl delete pods pod_name
+
+kubectl delete pod webserver
+
+UseCase -2
+----------
+
+Start tomcat in the kubernetes cluster with 3 replicas and name it appserver 
+
+kubectl run --image tomcat appserver -- replicas=3
+
+To see the list of pods releted to tomcat
+
+kubectl get pods -o wide | grep appserver
+
+
+UseCase - 3
+------------
+
+kubectl run --image mysql:5 mydb --env MYSQL_ROOT_PASSWORD=test1234 -- replicas 2
+
+kubectl get pods | grep mydb
+
+kubectl get pods
+
+kubectl delete deployment mydb
+
+
+

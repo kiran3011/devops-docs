@@ -1,0 +1,505 @@
+Maven
+--------
+
+Maven is a build tool of java which is used for compiling java programme and also for creating the artifact. Maven also works like a security mechanism for 
+adding the third party API , so that they don't distrub the code in Git. All the open source organization upload their artifact into Maven Global server.
+
+We connect to the Maven Global server , download those API's that are necessary for our project and store then on a separate server called Maven local server.
+All the developer connect their project to this Maven global server. With the help of these server perform the necessary development.
+
+This way development code is stored separately on git and API's requirement for development stored in Maven's Local repository. This will help in 
+protecting the code present in the Git for any viruses that might be present in those open source API.
+
+Build ( Compile , Run Test , package jar , package war , Deploy to server)
+
+1. Maven is a Build tool. ( provided by Apache Tool)
+2. Maven provide directory structure for  the Application ( standalone , Web Application)
+3. Maven take care of download required dependence.( different jar , JDBC jar , different library)
+4. maven compile the source code. ( Java code)
+5. Maven also compile Junit test code .
+6. Maven  Package the application ( it prepare jar file , War file, EAR files)
+7. maven also Run the Application , if it is web application , it will start the server.
+8. Maven also deploy the application ( all war file or Jar files)
+9. Maven also perform Unit Testing
+10. maven also do undeployment of our application  and stop the server.
+
+
+
+https://maven.apache.org/
+
+https://maven.apache.org/guides/
+
+https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+
+
+
+
+POM.xml ( Project Object Model) 
+--------
+When we execute a maven command to build a project the maven command looks for the pom.XML under the project for information. pom.XML and it has a lot of information such as what type of project it is in this case it is
+a jar project it could be war or several other information that are available the name of the project the artifact ID as well.
+
+
+1. it contain project configuration details like dependencies , repositories , plugins and resources
+2. when you do a compile(plugin) in the maven, maven will contact to POM.xml and take the configuration details from POM.xml file and perform compilation over the source code(java) directory.
+3. once the compilation process is completed , it will display in the console.
+4. different Maven plugins are -> compilation , Test , Run , Package , Deploy  etc.
+5. POM.xml  provide all the project Build configuration details to Maven.
+6. when we create Maven project then pom.xml will be created automatically.
+7. Responsibility of POM.xml files
+   1.Project Description
+   2.Repository
+   3.Dependency Management
+   4. Project Inheritence
+   5. Build Configuration
+   6. Build Profiles
+   
+ 1.Project Description -> It provides some details about the project like project name , Version name , packageing type
+
+pom.xml
+--------
+  <project>
+   <!-- Project Description-->
+   <ModelVersion> 5.0.0</ModelVersion>
+   <groupId> com.project.banking</groupId>
+   <artifactId> account</artifactId> 
+   <description> Application Description </description>
+   <packaging> jar/war/EAR </packaging>
+ </project>
+
+Maven Repositories
+------------------
+
+Maven is a concept called repository where it puts all the artifacts and its plugins and it will download them on the fly so if a project needs a particular dependency in the open source world or even within our firm those dependencies will be pulled from this repository and when we build our projects our projects can also be pushed into these repositories these repositories can be on the Internet there is a public maven repository where all the open-source projects are available as jars many companies maintain their own internal repository
+
+Maven Repositories are a location where project artifact are stored.
+
+ 
+2. Repository ->  Repository is a location in a system , it provide all the dependent jar files to our Application.
+                  Repository are able to manage all the Jar files which are required for application
+				  3 types of Repository in mavan
+				     1. Local Repository
+					 2. Central Repository
+					 3. Remote Repository
+					  
+i. Local Repository	 -> it is a location in our system which will be created by mvn command. Repository on local file system location ->c:/users/ .m2/ repository)	
+
+ii. when we required jar files in our application then maven will search for the dependencies first in local Repository
+
+ 2. Central Repository ->Public Repository hosted by maven community. It is a default repository in Maven , exists in Internet at a particular URL.
+    Apache provide a central repository -> "https://repo.maven.apache.org/maven2/"
+
+3. Remote Repositories -> Other location which can be public or private.
+  - JBoss, Oracle,Atlassian,Google Android
+  - private -> hosted by companies for internal artifact
+  
+Maven will first check locally , then check remote repositories
+
+By default , Maven will check remote repositories once per day.
+
+Steps to Use Maven For Application
+----------------------------------
+
+1. Install Maven Software
+2. Create Maven Project
+3. Write java Code
+4. Compile java Code
+5. Execute java Application
+
+
+JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+MAVEN_HOME: C:/apache-maven-3.5.4
+path: /usr/lib/jvm/java-11-openjdk-amd64/bin;c:/apache-maven-3.5.4/bin
+	
+
+-------------------------
+
+2. Creating Application Build
+------------------------------
+
+Git Repo-> Compile -> Test -> Package
+
+Create a Ubuntu 18 machine
+
+Login to machine using putty
+
+yum update -y
+
+apt-get install git
+apt-get install tree
+
+1. Verify Installed Java Version
+
+java -version
+(Only Java8 or Java11 are recommended)
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+java -version
+
+pwd to see the current path -> /home/ubuntu
+
+3. Set JAVA_HOME Variables
+
+cat >> /etc/environment <<EOL
+JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+JRE_HOME=/usr/lib/jvm/java-11-openjdk-amd64/jre
+EOL
+
+/usr/lib/jvm/java-11-openjdk-amd64
+
+Maven Install
+=============
+
+Login to the server’s
+
+mvn --version
+
+apt install maven
+
+ mvn --version
+ 
+maven configure
+--------------
+Login to server where maven installed
+go to - /usr/share/maven
+
+path - /usr/share/maven
+
+
+Usecase-1
+---------
+
+
+Maven Build LifeCycle
+--------------------
+
+- Maven is based on the concept of build lifecycle.
+- A lifecycle is a pre-defined group of build steps called phases
+- Each phase can be bound to one or more plugin goals
+- Keep in Mind all work done in Maven is done by plugin
+- LifeCycle and phases provide the framework to call plugin goals in a sequence
+
+
+
+git clone https://github.com/awsdevops009/MavenTraining.git
+
+cd MavenTraining/MySampleMavenProject
+
+ls
+
+mvn validate  ( Validate the project is correct and all necessary information is available.)
+
+mvn compile  ( Compile the source code of the project)
+
+mvn test ( test the compile source code using a suitable unit testing framework)
+
+mvn package ( take the compiled code and package it in its distributed format , such as JAR or war file)
+
+mvn clean ( Clean the projects unnecessary files. It will delete all the files in target folder)
+
+mvn Install ( Install the package into the local repository , for use as a dependency in 	other projects locally)
+
+mvn Deploy ( done in the build environment , copies the final package to the remote repository for sharing with other developers and projects)
+
+
+
+cd /src/test/java/com/testing/samples
+
+Modify the SampleUtilTest.java
+
+mvn test ( Now some test case will fail)
+
+Now remove the target folder
+
+rm -rf target
+
+mvn test
+
+mvn clean
+
+mvn clean package
+
+
+
+
+
+Usecase - 2
+-----------
+mkdir jenkin2
+cd jenkin2
+
+git clone https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+
+
+apt-get install tree
+
+tree ( you will able to see the project structure in tree)
+
+Now you are able to see src and pom.xml
+
+
+
+Maven compile
+--------------
+Go to Jenkins_project_Maven/maven-samples/single-module > mvn compile
+
+Now build successful. Now you will able to see target folder.
+
+tree
+
+
+Maven test
+--------------
+
+mvn test ( to do a unit test the application)
+
+It will create test-classes folder which contain all unit testcase file.
+
+Now delete the Target folder using rm -rf target
+
+mvn test ( It will do both maven compile + mvn test)
+
+
+Maven package
+--------------
+mvn package ( it will create a jar or war file)
+
+Go to target folder , you will able to see .jar file is present
+
+mvn package -> compile + testing+package -> jar
+
+mvn clean package 
+
+
+mvn Package vs mvn clean Package
+------------------------
+
+clean package will delete all the existing folder and create the package from the scratch. It will take more time than package.
+
+
+
+Usecase-3
+----------
+
+
+
+
+git clone https://github.com/awsdevops009/MavenTraining.git
+
+cd MavenTraining/MySampleMavenProject
+
+mvn compile ( to compile the maven project)
+
+after build completed , it created .m2 hidden folder.
+
+go to home directory
+
+cd ~
+ls -la
+
+cd /.m2/repository  ( it will download all the dependency in side this folder)
+
+
+-----------------------------------
+To create our own pom.xml and do a build
+
+cd ~ ( to go to home directory)
+
+mkdir hello-world
+
+cd hello-world
+
+touch pom.xml
+<project>
+ <groupId>org.Huddlerise</groupId>
+ <artifactId>hello-world</artifactId>
+ <version>1.6-SNAPSHOT</version>
+ <packaging>jar </packaging>
+ <modelVersion> 4.0.0 </modelVersion>
+ 
+ <properties>
+   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+   <maven.compiler.source>1.7</maven.compiler.source>
+   <maven.compiler.target>1.7</maven.compiler.target>
+</properties>
+ 
+</project>
+
+
+mkdir src
+cd src
+mkdir main
+cd main
+mkdir java
+
+cd java
+
+create  HelloWorld.java file
+
+public class HelloWorld
+{
+        public static void main(String[] args) {
+                System.out.println("Hello world");
+        }
+}
+
+
+Now Go to folder where pom.xml file exist. Now start build the mvn
+
+mvn compile
+
+After successful build ,you will able to see one "target" folder
+
+cd target
+
+tree ( it created a .class file)
+
+Now i need to it package it. to deliver to the client.
+
+mvn package
+
+After package successfully done. ( whatever maven create all are stored in target folder)
+
+cd target 
+
+tree ( you will able to see all the folder structure in tree structure)
+
+you will see it create a jar file.
+
+jar file created with name as  -> artifactId-version ( name of the jar file)
+
+Now i want to keep this mvn build file into repository ( go to the folder where your pom.xml file exist)
+
+mvn install ( take this target folder and copy it to local folder .m2)
+
+cd ~/.m2/repository/ ( Mavan local repository)
+
+cd /root/.m2/repository/org/Huddlerise/hello-world
+Here our project id or group id is ->org.Huddlerise
+
+Now you will see org/Huddlerise/hello-world
+
+
+
+
+Now i want to use my target folder now.
+
+Go to Pom.xml directory
+cd hello-world
+
+mvn clean ( to remove target folder)
+
+ls ( you will not able to see target folder)
+
+mvn clean compile ( First it will clean and then it will compile)
+
+mvn clean package
+
+mvn clean install
+
+Now delete the target folder ,  using mvn clean. Now do a directly mvn clean package without doing mvn clean compile.
+
+mvn clean
+mvn clean package ( but still you will not  get any error , because package also will do compile , install and package)
+
+if Now delete the target folder , Now do a directly mvn clean install  without doing mvn clean compile or mvn clean package.
+
+rm -rf ~/.m2/repository/org/Huddlerise/
+
+mvn clean install ( it will do compile , install , pckage and copy the repository to .m2 local directory. that means mvn clean install is doing everything.)
+
+cd ~/.m2/repository/org/Huddlerise/
+cd hello-world
+
+cd 1.6-SNAPSHOT
+ls  ( you will able to see hello-world-1.6-SNAPSHOT.jar)
+
+compile -> test-> package->install->deploy
+
+------------------------------------
+
+
+
+
+To run a mavan project
+----------------------
+
+copy the maven-example project from github
+
+https://github.com/cristhianguardado/maven.git
+
+git clone https://github.com/dashpradeep99/maven-example.git
+
+
+cd mavan-example
+ls ( you will able to see src , pom.xml and target folder)
+
+Now i don't want target folder. so mvn clean
+
+mvn clean
+ls ( now verify , target folder got deleted
+
+mvn compile
+mvn test ( code is written for unit test. so need to do unit test)
+mvn package
+mvn install
+
+mvn deploy( we will able to do when artifact/build  is complete)
+
+
+----------------------------------------
+
+
+
+
+
+
+	To install maven
+https://maven.apache.org/install.html
+
+Install of Maven
+Download maven gz file from https://maven.apache.org/download.cgi
+tar –xzvf  apache-maven-3.5.2-bin.tar.gz 
+sudo wget https://maven.apache.org/download.cgi/ apache-maven-3.5.2-bin.tar.gz
+Go to that folder -> cd apache-maven-3.5.2/bin
+Then set the path of the maven
+Path = /home/master/download/ apache-maven-3.5.2/bin ( need to set the maven path till bin folder)
+Maven –help ( to check maven has installed or not)
+Maven –v ( maven version)
+
+M2_Home = c:\maven
+	
+git clone https://github.com/karavindcc/https-github.com-vikrammane23-https-github.com-g0t4-jenkins2-course-spring-boot.git
+
+mv https-github.com-vikrammane23-https-github.com-g0t4-jenkins2-course-spring-boot/ First_Maven_project
+
+
+cd spring-boot-samples (go to spring-boot-samples)
+
+cd spring-boot-sample-atmosphere	
+   
+
+Setup Maven in Local machine
+============================
+
+setup the java path and maven path.
+
+JAVA_HOME: C:/java/JDK1.8.0;
+MAVEN_HOME: C:/apache-maven-3.5.4
+path: c:/java/JDK1.8.0/bin;c:/apache-maven-3.5.4/bin
+
+mvn archtype:generate
+
+===================================================
+
+
+https://github.com/awsdevops009/Jenkins_project_Maven.git
+
+
+git clone https://github.com/openmrs/openmrs-core.git
+
+cd openmrs-core   

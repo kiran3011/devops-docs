@@ -1,0 +1,19 @@
+mkdir nodejsproject
+cd nodejsproject
+
+docker build .
+docker build -t nodejsproject .
+
+docker run -p 3000:80 <imageid>
+
+docker run --name nodejs-cont -d -p 3000:80 nodejsproject:latest
+
+docker ps
+
+open the chrome browser and
+<publicIP:3000> ( you should able to see the application.
+
+open a duplicate window
+
+docker ps
+docker stop <container id>

@@ -1,0 +1,639 @@
+  using jenkin perform CI and CD
+ ------------------------------
+
+Stage 1 (Continuous DownLoad)
+------------------------------
+The developers create the code and upload that code into Git Repository.Whenever developers upload any
+Modified code into git version controlling system, Jenkins will get a notification and it will immediately download
+the code.this is workspace in jenkin. this is called continuous download.
+
+Stage 2 (Continuous Build)
+------------------------------
+the code download in the previous stage has to be converted into an artifact. this artefact can come in the format of war, ear
+exe files etc. this process is called build process and to perform this build process Jenkins will take the help of
+build plugin like Msbuild,Maven etc. This stage is called continuous Build.
+
+Stage 3 (Continuous Deployment)
+--------------------------------
+The artifact created in the previous stage has to be deployed into the testing server.the testing server might be running on some 
+Application server like tomcat,web logic etc, Jenkins will deploy the artefact into these application
+server so that tester can access it.This stage called Continuous Deployment
+
+Stage 4 (Continuous Testing)
+----------------------------
+Once the application is deployed into the testing environment Jenkins will run the automation testing programs created by the testers and check if the application is working correctly or not.these automation testing programs can be created by testers using tools like selenium,UFT etc
+If testing failed Jenkins will send automated emails to the team members.Developed will fix the defect and upload the modified code into git.
+Jenkins will trigger all the stages form stage 1.
+
+
+Using jenkin we can build the job.
+
+Continuous Download
+Continuous Build
+Continuous Deployment
+
+wheneven jenkin do a build , it create a directory or workspace.
+
+In Server1 install below items
+------------------------------
+
+Launch a ubuntu 22.0 version Ec2 
+
+Login to Ubuntu ec2 instance
+
+username : ubuntu
+
+sudo su
+
+
+install java
+------------
+apt-get update
+
+/home/ubuntu
+
+2. Install Java 11 on Ubuntu Machine
+
+sudo apt-get install openjdk-11-jdk-headless ( java 11)
+
+java -version
+
+
+jdk is present - /usr/lib/jvm/java-11-openjdk-amd64
+
+ls /usr/lib/jvm/java-11-openjdk-amd64
+
+ cd /home/ubuntu/
+ 
+Install Git
+------------
+git --version ( To verify git is present or not)
+apt-get install git ( git always present in ubuntu 18.0 machine)
+
+github.com 
+
+setup git project
+
+
+Install Maven
+-------------
+
+sudo apt-get install maven
+
+mvn -v
+
+Maven home: /usr/share/maven
+
+Java home: /usr/lib/jvm/java-11-openjdk-amd64
+
+
+apt-get install git
+apt-get install tree
+apt-get install wget
+
+
+Jenkins
+--------
+open https://jenkins.io/ and click on "Download" anc click on redhat/centos
+
+4. First, add the repository key to the system
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+
+5. Next, append the Debian package repository address to the server’s sources.list
+
+sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+6. Update System packages
+
+sudo apt update
+
+7. Install Jenkins and its dependencies
+
+sudo apt -y install jenkins
+
+8. Start Jenkins using systemctl
+
+sudo systemctl start jenkins
+
+9. Get Service Status
+
+sudo systemctl status jenkins  ( if not exit , press ctrl+c)
+
+systemctl status jenkins.service
+
+10. Enable Jenkins Service
+
+sudo systemctl enable jenkins
+
+ls -ld /var/lib/jenkins ( to check jenkins folder has created or not)
+
+ ps -ef | grep jenkins
+ 
+ ls -l /var/lib/jenkins/ ( all the configuration files present inside /var/lib/jenkins/)
+ 
+ netstat -ntlp (8080 port is listing which is default jenkin port)
+ 
+ open in a browser <public IP>:8080 - we  will able to see jenkins
+ 
+ cat /var/lib/jenkins/secrets/initialAdminPassword
+ 
+ paste the key in the console
+ 
+ Installed plugin in the console.
+ 
+Create a first user as "admin"
+
+
+Setup in the jenkin ( To do the build)
+--------------------
+
+open jenkin, click on Manage Jenkins
+
+click on Global Tool configuration
+
+ JDK
+ JDK Name: java
+ JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+ 
+Maven
+ Maven Name : maven
+ MAVEN_HOME: /usr/share/maven 
+
+ 
+ 
+ 
+ Setup Jenkins in the same ubuntu machine
+==============
+
+
+Create a New View - TomcatApplication
+
+Create a new job - Package_Application
+
+Freestyle 
+
+click on OK Button
+
+git - https://github.com/awsdevops009/Jenkins-tomact-project.git
+
+Under Build section
+
+invoke top-level maven Traget
+
+Maven version - LocalMaven
+Goals - clean package
+
+POM - java-tomcat-sample/pom.xml
+
+post-build Action
+
+Archive the artifact - 
+Files to archive - **/*.war
+ 
+ 
+ Go to the Build job and see the console output
+ 
+ 
+the above job will convert the code downloaded in stage 1 into an artifact.this artifact is generated in the format of a war file
+
+ Now you will able to see the target folder inside webapps folder.
+ 
+ ===================================================================================================================
+ 
+ Setup tomcat in a Same server
+ -----------------------------------
+ 
+Install & Configure Tomcat in Staging Environment
+Install Tomcat On Linux/Unix Box & Configure with Jenkins
+
+ 
+ Launch a ubuntu 18.0 machine
+ 
+ login as -> ubuntu
+ sudo su
+
+
+
+Step 2: Install Tomcat
+
+sudo apt install unzip wget
+cd /tmp
+
+
+wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.73/bin/apache-tomcat-9.0.73.zip
+
+
+
+
+unzip apache-tomcat-*.zip
+sudo mkdir -p /opt/tomcat
+sudo mv apache-tomcat-9.0.73 /opt/tomcat/
+
+cd ..
+Go to cd /opt/tomcat/
+ls ( verify tomcat folder should exist
+
+Step 3: Change Tomcat Server Port
+
+Jenkins is running on Port 8080, and tomcat defalut port is also 8080. So we need to change the Tomcat port, I am changing it to 9090
+
+
+
+Go to /opt/tomcat/apache-tomcat-9.0.73/conf/server.xml file
+
+cd /opt/tomcat
+
+cd apache-tomcat-9.0.73
+
+ls
+
+cd conf
+
+vi server.xml
+
+change the connector port to - 9090
+
+Search for Connector and change the Port Value, save the file.
+
+
+
+
+
+Step 4: Change Permission of Scripts in /bin
+
+cd /opt/tomcat/apache-tomcat-9.0.73/bin
+ls -la
+sudo chmod +x * ( Now permission has changed to execute permission.)
+
+ls -la
+
+
+Step 5: Start tomcat server and accss via browser on port 9090
+
+/opt/tomcat/apache-tomcat-9.0.73/bin/startup.sh
+
+./startup.sh
+
+
+Take the  publicip of Ec2 instance and run in the browser using port - 9090
+
+http://44.202.131.121:9090/
+
+
+Step 6: Configure Jenkins with Tomcat for Auto Deployment of Artifacts.
+
+Set Credentials of Tomcat that Jenkins use.
+
+cd /opt/tomcat/apache-tomcat-9.0.73/conf
+
+update tomcat-users.xml file.
+
+roles : manager-script & admin-gui
+
+Set password : tomcat
+
+vi tomacat-users.xml
+
+uncomment the last section of the file
+
+  <role rolename="manager-script"/>
+  <role rolename="manager-gui"/>
+  <user username="tomcat" password="tomcat" roles="manager-script , manager-gui"/>
+  
+
+  Step - 6
+  --------
+  
+  Go to this place
+  
+ cd  /opt/tomcat/apache-tomcat-9.0.73/webapps/manager/META-INF
+ vi context.xml
+
+ Comment the below line in the context.xml file
+
+ 
+  <!--  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /> -->
+
+
+
+
+Step 6 : Restart the tomcat server
+
+Go to /opt/tomcat/apache-tomcat-9.0.73/bin
+
+/opt/tomcat/apache-tomcat-9.0.73/bin/shutdown.sh
+/opt/tomcat/apache-tomcat-9.0.73/bin/startup.sh
+
+./shutdown.sh
+./startup.sh
+
+
+To see the log files in tomacat
+cd /opt/tomcat
+
+cd apache-tomcat-9.0.73/logs
+
+tail -f catalina.out
+
+
+Open the publicip:9090 ( It will open the tomacat server)
+
+click on manageApp
+
+username - tomacat
+password - tomacat
+
+
+
+Install Plugin in Jenkins
+-------------
+
+Manage jenkins - manage Plugin 
+
+search for "Copy artifact"
+
+installed this
+
+search for " Deploy to Container"
+
+installed this.
+
+Goto Jenkins Job
+
+Create a new Job - Deploy_Application_Stagging
+freestyle
+click ok
+
+No need to specify git URL because this job is not goin gto do any build. only it will copy the atrifact from provious job.
+
+Unde Build
+
+Choose - copy Artifact from other project
+
+Project_Name - Package_Application
+
+which Build - Last successful build
+
+Artifacts to copy - **/*.war
+
+Under post-build Action
+-----------------------
+Deploy war/ear to a container
+
+WAR/EAR files - **/*.war
+Context path - /
+container - Tomcat 8.x Remote
+
+Credentials - Add jenkins
+
+Kind - username with password
+
+username - tomcat
+password - tomacat
+
+Tomcat URL - <http://Public_IP_Tomcat_server:9090 > http://54.172.198.169:9090/
+
+save the job
+
+
+Now run the Deploy_Application_Stagging
+
+once job completed successfully
+
+open the tomcat server URL:9090
+
+You will able to see the war file.
+
+
+Now Do this process Automated
+=============================
+
+Go to the Package_Application
+configure 
+
+Poll SCM - * * * * *
+
+Under post-build
+---------------
+
+Post buid action
+
+Build other projects
+
+project to build - Deploy_Application_Stagging
+
+select "Trigger only if build is stable"
+
+save the job
+
+Now Go to Github and change the code in the master branch.
+
+Modify the code in Index.jsp
+
+https://github.com/awsdevops009/Jenkins-tomact-project/blob/master/java-tomcat-sample/src/main/webapp/index.jsp
+
+after modification , whne the developer will merge the code in master branch
+
+automatically the job will start and deployed to tomact server.
+
+You can see the changes here.
+http://54.172.198.169:9090/
+
+Go to Jenkins - Manage Jenkins
+
+add the plugin - Build pipeline
+
+open the view and choose the "Build pipeline view"
+
+Enter a pipeline view name - Tomcat-pipeline
+click on ok
+choose the initial job "package Application"
+click on ok
+
+No of build - 5
+
+-------------------------------------------------------------------------
+
+Deploy the Application to Prod Environment
+=========================================
+
+Deploy the artifact to prod tomacat server.
+
+Go to below location of the tomacat server
+
+/opt/tomcat/apache-tomcat-9.0.73/bin
+
+./shutdown.sh
+
+cd /opt/tomcat/
+
+cp -r apache-tomcat-9.0.73/ apache-tomcat-9.0.73-prod/
+
+ls ( you will able to see apache-tomacat created a copy of the folder.)
+
+Go to below folder
+cd apache-tomcat-9.0.73-prod/
+cd conf/
+
+
+vi server.xml
+
+change the connector port to - 9091
+
+Search for Connector and change the Port Value, save the file.
+
+Go to 
+cd /opt/tomcat/
+ls ( you will see two apache-tomacat folder)
+
+cd apache-tomcat-9.0.73
+
+Go to  cd bin/
+./startup.sh
+
+now open the server in browser with 9090 port
+Public_IP_Tomcat_server:9090
+
+To see the log files in tomacat
+cd /opt/tomacat
+
+tail -f apache-tomcat-9.0.73/logs/catalina.out
+
+Start the second tomacat server
+-------------------------------
+
+Go to 
+cd /opt/tomcat/
+ls ( you will see two apache-tomacat folder)
+
+cd apache-tomcat-9.0.73-prod
+
+Go to  cd bin/
+./startup.sh
+
+
+
+
+Step 6: Configure Jenkins with Tomcat for Auto Deployment of Artifacts.
+
+Set Credentials of Tomcat that Jenkins use.
+
+cd /opt/tomcat/apache-tomcat-9.0.73/conf
+
+update tomcat-users.xml file.
+
+roles : manager-script & admin-gui
+
+Set password : tomcat
+
+vi tomacat-users.xml
+
+uncomment the last section of the file
+
+  <role rolename="manager-script"/>
+  <role rolename="manager-gui"/>
+  <user username="tomcat-prod" password="tomcat-prod" roles="manager-script , manager-gui"/>
+  
+
+  Step - 6
+  --------
+  
+  Go to this place
+  
+ cd  /opt/tomcat/apache-tomcat-9.0.73/webapps/manager/META-INF
+ vi context.xml
+
+ Comment the below line in the context.xml file
+
+ 
+  <!--  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" /> -->
+
+
+
+
+Step 6 : Restart the tomcat server
+
+Go to /opt/tomcat/apache-tomcat-9.0.73/bin
+
+/opt/tomcat/apache-tomcat-9.0.73/bin/shutdown.sh
+/opt/tomcat/apache-tomcat-9.0.73/bin/startup.sh
+
+./shutdown.sh
+./startup.sh
+
+
+To see the log files in tomacat
+cd /opt/tomcat
+
+cd apache-tomcat-9.0.73-prod/logs
+
+tail -f catalina.out
+
+Open the publicip:9091( It will open the tomacat server)
+
+
+
+Create Prod Job in Jenkins
+==============================
+
+
+Goto Jenkins Job
+
+Create a new Job - Deploy_Application_Prod
+freestyle
+click ok
+
+No git URL
+
+Unde Build
+
+Choose - copy Artifact from other project
+
+Project_Name - Package_Application
+
+which Build - Last successful build ( stable only)
+
+Artifacts to copy - **/*.war
+
+Save the Job.
+
+Under post-build Action
+-----------------------
+Deploy war/ear to a container
+
+WAR/EAR files - **/*.war
+Context path - /
+container - Tomcat 8.x Remote
+
+Credentials - Add jenkins
+
+Kind - username with password
+
+username - tomcat-prod
+password - tomacat-prod
+
+Tomat URL - <http://Public_IP_Tomcat_server:9091 > http://54.172.198.169:9091/
+
+save the job
+
+
+
+Go to jenkins
+
+Install plugin - pipeline
+
+open the Deploy_Application_Stagging
+
+configure
+
+Go to post-build Action
+
+Build other project(Manual step)
+
+Downstream Project_Name - Deploy_Application_Prod
+
+save the job.
+
